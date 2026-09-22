@@ -1,4 +1,13 @@
+import { lazy, Suspense } from "react";
 import { HashRouter, NavLink, Route, Routes } from "react-router";
+
+const TrialPage = import.meta.env.DEV
+  ? lazy(() =>
+      import("./trial/dnd/DndTrial").then(({ DndTrial }) => ({
+        default: DndTrial,
+      })),
+    )
+  : null;
 
 const pages = [
   { to: "/", label: "育成計画" },
@@ -35,6 +44,16 @@ export function App() {
           <Route path="/" element={<Page title="育成計画" />} />
           <Route path="/chart" element={<Page title="チャート" />} />
           <Route path="/disclaimer" element={<Page title="免責事項" />} />
+          {TrialPage && (
+            <Route
+              path="/dnd-trial"
+              element={
+                <Suspense fallback={<p>試運転画面を読み込み中です。</p>}>
+                  <TrialPage />
+                </Suspense>
+              }
+            />
+          )}
           <Route path="*" element={<Page title="ページが見つかりません" />} />
         </Routes>
       </main>
