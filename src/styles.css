@@ -1,0 +1,44 @@
+:root {
+  font-family: system-ui, sans-serif;
+  line-height: 1.5;
+  color: #18212b;
+  background: #f8fafc;
+}
+
+body {
+  margin: 0;
+}
+
+.layout {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+header {
+  background: #fff;
+  border-bottom: 1px solid #dce3e9;
+}
+
+.site-title {
+  margin: 0 0 0.75rem;
+  font-weight: 700;
+}
+
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+nav a {
+  color: #164f85;
+}
+
+nav a[aria-current="page"] {
+  font-weight: 700;
+}
+
+main {
+  min-height: 60vh;
+}
