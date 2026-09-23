@@ -72,6 +72,11 @@ test("育成経路をドラッグとボタンで編集し、切り替え後も�
 test("キーボードで実画面の追加・変更・中止ができる", async ({ page }) => {
   await page.goto("/#/");
   await page.getByRole("button", { name: "Lv2～10 (0/9)" }).click();
+  for (const label of ["HP", "ST", "物理攻撃", "物理防御", "魔法防御"])
+    await page.getByRole("checkbox", { name: label }).uncheck();
+  await expect(
+    page.locator(".comparison-editable tbody tr").first(),
+  ).toHaveAttribute("data-testid", "comparison-mage");
 
   await keyboardDrag(
     page,
@@ -113,6 +118,50 @@ test("キーボードで実画面の追加・変更・中止ができる", async
   await page.keyboard.press("ArrowRight");
   await page.keyboard.press("Escape");
   await expect(page.getByTestId("capacity-forLv10")).toHaveText("2/9");
+});
+
+test("並べ替えた比較行から追加・変更でき、職業と数量が一致する", async ({
+  page,
+}) => {
+  await page.goto("/#/");
+  await page.getByRole("button", { name: "Lv11～100 (0/90)" }).click();
+  for (const label of ["HP", "ST", "魔法攻撃", "物理防御", "魔法防御"])
+    await page.getByRole("checkbox", { name: label }).uncheck();
+
+  await expect(
+    page.locator(".comparison-editable tbody tr").first(),
+  ).toHaveAttribute("data-testid", "comparison-assassin");
+  await page.keyboard.press("Tab");
+  await expect(
+    page.getByTestId("comparison-assassin").getByRole("button", {
+      name: "assassin 1 件をドラッグまたは選択",
+    }),
+  ).toBeFocused();
+  await page
+    .getByTestId("comparison-assassin")
+    .getByRole("button", { name: "assassin 10 件をドラッグまたは選択" })
+    .dragTo(page.getByTestId("range-forLv100"), { steps: 12 });
+  await expect(page.getByTestId("capacity-forLv100")).toHaveText("10/90");
+  await expect(page.getByTestId("count-forLv100-assassin")).toHaveText("10 件");
+
+  await page
+    .getByRole("button", {
+      name: "forLv100 の assassin 1 件をドラッグまたは選択",
+    })
+    .dragTo(page.getByTestId("palette-sorcerer"), { steps: 12 });
+  await expect(page.getByTestId("count-forLv100-sorcerer")).toHaveText("1 件");
+
+  await page
+    .getByRole("button", {
+      name: "forLv100 の sorcerer 1 件をドラッグまたは選択",
+    })
+    .click();
+  await page
+    .getByTestId("palette-warrior")
+    .getByRole("button", { name: "この職業へ変更" })
+    .click();
+  await expect(page.getByTestId("count-forLv100-warrior")).toHaveText("1 件");
+  await expect(page.getByTestId("capacity-forLv100")).toHaveText("10/90");
 });
 
 test.describe("狭い画面", () => {
@@ -165,8 +214,33 @@ test.describe("狭い画面", () => {
     ).toBeLessThanOrEqual(390);
   });
 
+  test("比較表を横スクロールしても職業名と操作が見える", async ({ page }) => {
+    await page.goto("/#/");
+    await page.getByRole("button", { name: "Lv11～100 (0/90)" }).click();
+    const scroll = page.locator(".comparison-editable .comparison-scroll");
+    const row = page.getByTestId("comparison-fighter");
+    const before = await row.locator("th").boundingBox();
+    await scroll.evaluate((element) => {
+      element.scrollLeft = 350;
+    });
+    const after = await row.locator("th").boundingBox();
+    expect(before?.x).toBeDefined();
+    expect(Math.abs((after?.x ?? 0) - (before?.x ?? 0))).toBeLessThan(2);
+    await expect(
+      row.getByRole("button", { name: "fighter 1 件をドラッグまたは選択" }),
+    ).toBeVisible();
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth),
+    ).toBeLessThanOrEqual(390);
+  });
+
   test("実画面で指による追加ができる", async ({ page, context }) => {
     await page.goto("/#/");
+    for (const label of ["HP", "ST", "物理攻撃", "物理防御", "魔法防御"])
+      await page.getByRole("checkbox", { name: label }).uncheck();
+    await expect(
+      page.locator(".comparison-editable tbody tr").first(),
+    ).toHaveAttribute("data-testid", "comparison-mage");
     await page.getByTestId("range-onlyLv1").scrollIntoViewIfNeeded();
     const scrollBefore = await page.evaluate(() => window.scrollY);
     await touchDrag(

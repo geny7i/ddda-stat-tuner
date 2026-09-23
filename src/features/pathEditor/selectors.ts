@@ -1,6 +1,10 @@
 import { createSelector } from "@reduxjs/toolkit";
 import type { RootState } from "../../app/store";
-import { calculateStatus } from "../../domain";
+import {
+  calculateStatus,
+  getComparisonRows,
+  getLevelRangeById,
+} from "../../domain";
 
 export const selectEditorState = (state: RootState) => state.editor;
 
@@ -18,4 +22,13 @@ export const selectCurrentLevel = createSelector(
   [selectEditorState],
   ({ path }) =>
     Object.values(path).reduce((sum, steps) => sum + steps.length, 0),
+);
+
+export const selectComparisonRows = createSelector(
+  [
+    (state: RootState) => state.editor.activeRange,
+    (state: RootState) => state.editor.focusedStats,
+  ],
+  (rangeId, focusedStats) =>
+    getComparisonRows(getLevelRangeById(rangeId), focusedStats),
 );

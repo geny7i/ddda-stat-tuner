@@ -22,7 +22,10 @@ import {
   type LevelRangeId,
   type VocationId,
   type VocationPath,
+  type StatusGrowthWithScore,
 } from "../../domain";
+import { VocationComparison } from "./VocationComparison";
+import { VocationIcon } from "./VocationIcon";
 import {
   parseSource,
   parseTarget,
@@ -107,7 +110,10 @@ function PaletteCard({
       data-testid={`palette-${vocationId}`}
     >
       <div ref={ref}>
-        <strong>{vocationId}</strong>
+        <strong className="vocation-row-name">
+          <VocationIcon vocationId={vocationId} />
+          {vocationId}
+        </strong>
         <div className="path-actions">
           <button
             ref={handleRef}
@@ -294,7 +300,7 @@ function RangeArea({
 type PathEditorProps = {
   path: VocationPath;
   visibleRanges: readonly LevelRangeId[];
-  vocations: readonly VocationId[];
+  comparisonRows: readonly StatusGrowthWithScore[];
   onAdd: (range: LevelRangeId, vocation: VocationId, count: number) => void;
   onReplace: (
     range: LevelRangeId,
@@ -307,7 +313,7 @@ type PathEditorProps = {
 export function PathEditor({
   path,
   visibleRanges,
-  vocations,
+  comparisonRows,
   onAdd,
   onReplace,
   onRemove,
@@ -325,7 +331,7 @@ export function PathEditor({
     <div className="path-page">
       <p id="path-instructions">
         各 ×
-        ボタンをドラッグし、右側のレベル帯にドロップします。配置済みの職業は別の職業へドラッグして変更します。キーボードでは
+        ボタンをドラッグし、育成経路のレベル帯にドロップします。配置済みの職業は別の職業へドラッグして変更します。キーボードでは
         Space で持ち上げ、矢印キーで移動し、Space で確定、Escape
         で中止します。ボタンをクリックして選び、追加・変更することもできます。
       </p>
@@ -399,30 +405,31 @@ export function PathEditor({
         }}
       >
         <div className="path-layout">
-          <section aria-label="職業の選択肢" className="path-palette">
-            <h2>職業の選択肢</h2>
-            {vocations.map((vocationId) => (
-              <PaletteCard
-                key={vocationId}
-                vocationId={vocationId}
-                onSelect={setSelected}
-                selectedSource={selectedSource}
-                draggedStack={draggedStack}
-                onReplace={() => {
-                  if (selectedSource)
-                    onReplace(
-                      selectedSource.rangeId,
-                      selectedSource.vocationId,
-                      vocationId,
-                    );
-                }}
-              />
-            ))}
-            <p>
+          <div className="path-palette">
+            <VocationComparison
+              rows={comparisonRows}
+              renderVocation={(vocationId) => (
+                <PaletteCard
+                  vocationId={vocationId}
+                  onSelect={setSelected}
+                  selectedSource={selectedSource}
+                  draggedStack={draggedStack}
+                  onReplace={() => {
+                    if (selectedSource)
+                      onReplace(
+                        selectedSource.rangeId,
+                        selectedSource.vocationId,
+                        vocationId,
+                      );
+                  }}
+                />
+              )}
+            />
+            <p className="path-selection">
               選択中:{" "}
               {selected ? `${selected.vocationId} ×${selected.count}` : "なし"}
             </p>
-          </section>
+          </div>
           <section aria-label="育成経路" className="path-board">
             <h2>育成経路</h2>
             {LEVEL_RANGES.filter(({ id }) => visibleRanges.includes(id)).map(

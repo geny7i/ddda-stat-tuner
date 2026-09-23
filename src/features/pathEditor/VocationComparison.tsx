@@ -1,50 +1,30 @@
+import type { ReactNode } from "react";
 import {
-  getStatusGrowth,
-  sortByFocusedStatIds,
   STAT_IDS,
-  type LevelRange,
-  type StatId,
+  type StatusGrowthWithScore,
+  type VocationId,
 } from "../../domain";
 import { STAT_LABELS } from "./statusLabels";
 
 export function VocationComparison({
-  range,
-  focusedStats,
-  onToggleFocus,
+  rows,
   showChart = false,
+  renderVocation,
 }: {
-  range: LevelRange;
-  focusedStats: readonly StatId[];
-  onToggleFocus: (statId: StatId) => void;
+  rows: readonly StatusGrowthWithScore[];
   showChart?: boolean;
+  renderVocation?: (vocationId: VocationId) => ReactNode;
 }) {
-  const rows = sortByFocusedStatIds(
-    range.availableVocationIds.map((vocationId) =>
-      getStatusGrowth(vocationId, range.id),
-    ),
-    focusedStats,
-  );
   const maxScore = Math.max(1, ...rows.map(({ score }) => score));
 
   return (
     <section
-      className="comparison-panel"
+      className={`comparison-panel ${renderVocation ? "comparison-editable" : ""}`}
       aria-labelledby="vocation-comparison-title"
     >
-      <h2 id="vocation-comparison-title">職業ごとの成長値</h2>
-      <fieldset className="focus-options">
-        <legend>注目するステータス</legend>
-        {STAT_IDS.map((statId) => (
-          <label key={statId}>
-            <input
-              type="checkbox"
-              checked={focusedStats.includes(statId)}
-              onChange={() => onToggleFocus(statId)}
-            />
-            {STAT_LABELS[statId]}
-          </label>
-        ))}
-      </fieldset>
+      <h2 id="vocation-comparison-title">
+        {renderVocation ? "職業と成長値" : "職業ごとの成長値"}
+      </h2>
       {showChart && (
         <ul className="score-chart" aria-label="職業スコアの比較">
           {rows.map(({ vocationId, score }) => (
@@ -74,7 +54,9 @@ export function VocationComparison({
           <tbody>
             {rows.map(({ vocationId, status, score }) => (
               <tr key={vocationId} data-testid={`comparison-${vocationId}`}>
-                <th scope="row">{vocationId}</th>
+                <th scope="row">
+                  {renderVocation ? renderVocation(vocationId) : vocationId}
+                </th>
                 <td data-testid={`score-${vocationId}`}>{score}</td>
                 {STAT_IDS.map((statId) => (
                   <td key={statId}>{status[statId]}</td>

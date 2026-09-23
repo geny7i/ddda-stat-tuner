@@ -1,5 +1,9 @@
 import { type VocationId, VOCATION_IDS } from "./vocations";
-import { type LevelRangeId, LEVEL_RANGE_IDS } from "./levelRanges";
+import {
+  type LevelRange,
+  type LevelRangeId,
+  LEVEL_RANGE_IDS,
+} from "./levelRanges";
 import { type StatId, type Status, scoreStatus } from "./status";
 
 export type StatusGrowth = {
@@ -329,4 +333,16 @@ export function sortByFocusedStatIds(
       score: scoreStatus(growth.status, focusedStatIds),
     }))
     .sort((left, right) => right.score - left.score);
+}
+
+export function getComparisonRows(
+  range: LevelRange,
+  focusedStatIds: readonly StatId[],
+): StatusGrowthWithScore[] {
+  return sortByFocusedStatIds(
+    range.availableVocationIds.map((vocationId) =>
+      getStatusGrowth(vocationId, range.id),
+    ),
+    focusedStatIds,
+  );
 }
