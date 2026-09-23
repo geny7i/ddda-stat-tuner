@@ -46,6 +46,12 @@ test("育成経路をドラッグとボタンで編集し、切り替え後も�
     .dragTo(page.getByTestId("palette-assassin"), { steps: 12 });
   await expect(page.getByTestId("count-forLv100-fighter")).toHaveText("9 件");
   await expect(page.getByTestId("count-forLv100-assassin")).toHaveText("1 件");
+  await expect(
+    page.getByRole("button", { name: "Lv11～100 (10/90)" }),
+  ).toHaveAttribute("aria-describedby", "range-breakdown-forLv100");
+  await expect(page.locator("#range-breakdown-forLv100")).toHaveText(
+    "assassin 1件、fighter 9件",
+  );
 
   await page.getByRole("button", { name: "Lv2～10 (0/9)" }).click();
   await expect(page.getByTestId("palette-assassin")).toHaveCount(0);
@@ -128,6 +134,12 @@ test.describe("狭い画面", () => {
       .getByRole("button", { name: "選択を追加" })
       .click();
     await expect(page.getByTestId("capacity-forLv10")).toHaveText("9/9");
+    await expect(page.locator("#range-breakdown-forLv10")).toHaveText(
+      "mage 9件",
+    );
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth),
+    ).toBeLessThanOrEqual(390);
     await page.getByRole("radio", { name: "SS", exact: true }).check();
     await page.getByRole("button", { name: "Lv1～1 (0/1)" }).click();
     await page.getByRole("button", { name: "Lv2～10 (9/9)" }).click();
@@ -135,6 +147,22 @@ test.describe("狭い画面", () => {
     await expect(
       page.getByRole("radio", { name: "SS", exact: true }),
     ).toBeChecked();
+  });
+
+  test("9 職業が混在しても各レベル帯の内訳が折り返される", async ({ page }) => {
+    await page.goto("/#/restore?c=1-m-z-z9-zyxwvutsr-t64");
+    const range = page.getByRole("button", { name: "Lv11～100 (9/90)" });
+    await expect(range).toBeVisible();
+    await expect(range.locator("img")).toHaveCount(9);
+    await expect(page.locator("#range-breakdown-forLv100")).toContainText(
+      "mystic_knight 1件",
+    );
+    await expect(
+      page.getByRole("button", { name: "Lv101～200 (100/100)" }),
+    ).toBeVisible();
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth),
+    ).toBeLessThanOrEqual(390);
   });
 
   test("実画面で指による追加ができる", async ({ page, context }) => {
