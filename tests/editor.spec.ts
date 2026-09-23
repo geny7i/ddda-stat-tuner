@@ -74,9 +74,10 @@ test("キーボードで実画面の追加・変更・中止ができる", async
   await page.getByRole("button", { name: "Lv2～10 (0/9)" }).click();
   for (const label of ["HP", "ST", "物理攻撃", "物理防御", "魔法防御"])
     await page.getByRole("checkbox", { name: label }).uncheck();
-  await expect(
-    page.locator(".comparison-editable tbody tr").first(),
-  ).toHaveAttribute("data-testid", "comparison-mage");
+  await expect(page.locator(".comparison-card").first()).toHaveAttribute(
+    "data-testid",
+    "comparison-mage",
+  );
 
   await keyboardDrag(
     page,
@@ -128,9 +129,10 @@ test("並べ替えた比較行から追加・変更でき、職業と数量が�
   for (const label of ["HP", "ST", "魔法攻撃", "物理防御", "魔法防御"])
     await page.getByRole("checkbox", { name: label }).uncheck();
 
-  await expect(
-    page.locator(".comparison-editable tbody tr").first(),
-  ).toHaveAttribute("data-testid", "comparison-assassin");
+  await expect(page.locator(".comparison-card").first()).toHaveAttribute(
+    "data-testid",
+    "comparison-assassin",
+  );
   await page.keyboard.press("Tab");
   await expect(
     page.getByTestId("comparison-assassin").getByRole("button", {
@@ -162,6 +164,20 @@ test("並べ替えた比較行から追加・変更でき、職業と数量が�
     .click();
   await expect(page.getByTestId("count-forLv100-warrior")).toHaveText("1 件");
   await expect(page.getByTestId("capacity-forLv100")).toHaveText("10/90");
+});
+
+test("広い画面では職業と成長値の右に育成経路を表示する", async ({ page }) => {
+  await page.goto("/#/");
+  const comparison = await page.locator(".comparison-editable").boundingBox();
+  const board = await page
+    .getByRole("region", { name: "育成経路" })
+    .boundingBox();
+  expect(comparison).not.toBeNull();
+  expect(board).not.toBeNull();
+  expect((comparison?.x ?? 0) + (comparison?.width ?? 0)).toBeLessThan(
+    board?.x ?? 0,
+  );
+  expect(Math.abs((comparison?.y ?? 0) - (board?.y ?? 0))).toBeLessThan(3);
 });
 
 test.describe("狭い画面", () => {
@@ -214,18 +230,18 @@ test.describe("狭い画面", () => {
     ).toBeLessThanOrEqual(390);
   });
 
-  test("比較表を横スクロールしても職業名と操作が見える", async ({ page }) => {
+  test("職業カード内で成長値を見られ、画面幅に収まる", async ({ page }) => {
     await page.goto("/#/");
     await page.getByRole("button", { name: "Lv11～100 (0/90)" }).click();
-    const scroll = page.locator(".comparison-editable .comparison-scroll");
     const row = page.getByTestId("comparison-fighter");
-    const before = await row.locator("th").boundingBox();
-    await scroll.evaluate((element) => {
-      element.scrollLeft = 350;
-    });
-    const after = await row.locator("th").boundingBox();
-    expect(before?.x).toBeDefined();
-    expect(Math.abs((after?.x ?? 0) - (before?.x ?? 0))).toBeLessThan(2);
+    await expect(row.locator(".comparison-card-stats dt")).toHaveText([
+      "hp",
+      "st",
+      "atk",
+      "matk",
+      "def",
+      "mdef",
+    ]);
     await expect(
       row.getByRole("button", { name: "fighter 1 件をドラッグまたは選択" }),
     ).toBeVisible();
@@ -238,9 +254,10 @@ test.describe("狭い画面", () => {
     await page.goto("/#/");
     for (const label of ["HP", "ST", "物理攻撃", "物理防御", "魔法防御"])
       await page.getByRole("checkbox", { name: label }).uncheck();
-    await expect(
-      page.locator(".comparison-editable tbody tr").first(),
-    ).toHaveAttribute("data-testid", "comparison-mage");
+    await expect(page.locator(".comparison-card").first()).toHaveAttribute(
+      "data-testid",
+      "comparison-mage",
+    );
     await page.getByTestId("range-onlyLv1").scrollIntoViewIfNeeded();
     const scrollBefore = await page.evaluate(() => window.scrollY);
     await touchDrag(

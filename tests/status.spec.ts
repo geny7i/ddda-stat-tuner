@@ -25,7 +25,9 @@ test("経路・体格・注目項目の変更をステータスと比較表へ�
   for (const label of ["HP", "ST", "魔法攻撃", "物理防御", "魔法防御"])
     await page.getByRole("checkbox", { name: label }).uncheck();
 
-  await expect(page.locator("tbody tr").first()).toContainText("assassin");
+  await expect(page.locator(".comparison-card").first()).toContainText(
+    "assassin",
+  );
   await expect(page.getByTestId("score-assassin")).toHaveText("6");
   await expect(page.getByTestId("score-warrior")).toHaveText("5");
 });

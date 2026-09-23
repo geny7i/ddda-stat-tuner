@@ -151,25 +151,78 @@
   text-align: left;
 }
 
-.comparison-editable table {
-  min-width: 50rem;
+.comparison-cards {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.comparison-editable th:first-child {
-  position: sticky;
-  left: 0;
-  z-index: 1;
-  min-width: 12.5rem;
-  background: #fff;
+.comparison-card {
+  min-width: 0;
+  border: 1px solid #dce3e9;
+  border-radius: 0.4rem;
+  padding: 0.6rem;
 }
 
-.comparison-editable thead th:first-child {
-  z-index: 2;
+.comparison-card-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 0.5rem;
+}
+
+.comparison-card-score {
+  display: grid;
+  justify-items: end;
+  font-size: 0.8rem;
+  line-height: 1.2;
+}
+
+.comparison-card-score output {
+  font-size: 1.1rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.comparison-card-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.3rem;
+  margin: 0.5rem 0 0;
+}
+
+.comparison-card-stats div {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.2rem;
+  min-width: 0;
+  border-radius: 0.25rem;
+  background: #eef3f7;
+  padding: 0.2rem 0.35rem;
+  font-size: 0.8rem;
+}
+
+.comparison-card-stats dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
 }
 
 .comparison-editable .path-card {
-  padding: 0.4rem;
+  border: 0;
+  padding: 0;
   font-weight: 400;
+}
+
+.comparison-editable .path-card.path-target {
+  outline: 2px solid #086b43;
+  outline-offset: 2px;
+}
+
+.comparison-editable .path-card.path-rejected {
+  outline: 2px solid #9b5a25;
+  outline-offset: 2px;
 }
 
 .vocation-row-name {
@@ -286,7 +339,7 @@
 
 .path-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1.15fr) minmax(17rem, 1fr);
   gap: 1rem;
   align-items: start;
   min-width: 0;
@@ -392,6 +445,10 @@
 }
 
 @media (max-width: 760px) {
+  .path-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .status-values {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
