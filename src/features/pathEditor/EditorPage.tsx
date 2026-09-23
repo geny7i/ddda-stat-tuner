@@ -17,6 +17,7 @@ import {
 import { PathEditor } from "./PathEditor";
 import { StatusSummary } from "./StatusSummary";
 import { VocationComparison } from "./VocationComparison";
+import { ShareButton } from "../sharing/ShareButton";
 
 function rangeLabel(id: LevelRangeId): string {
   const range = LEVEL_RANGES.find((candidate) => candidate.id === id);
@@ -46,6 +47,7 @@ export function EditorPage() {
       <p>レベル帯を選び、職業を追加・変更・削除して育成経路を組み立てます。</p>
 
       <StatusSummary status={currentStatus} level={currentLevel} />
+      <ShareButton character={{ vocationPath: path, weightClass }} />
 
       <div className="editor-controls">
         <fieldset className="editor-weight">
