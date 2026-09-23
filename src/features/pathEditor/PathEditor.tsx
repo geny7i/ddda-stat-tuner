@@ -15,6 +15,7 @@ import {
   PointerSensor,
 } from "@dnd-kit/dom";
 import {
+  countVocations,
   getLevelRangeById,
   isVocationAvailable,
   LEVEL_RANGES,
@@ -246,9 +247,7 @@ function RangeArea({
       return parsed?.kind === "selection";
     },
   });
-  const counts = new Map<VocationId, number>();
-  for (const vocation of steps)
-    counts.set(vocation, (counts.get(vocation) ?? 0) + 1);
+  const counts = countVocations(steps);
   const canAdd =
     !full &&
     selected !== null &&
