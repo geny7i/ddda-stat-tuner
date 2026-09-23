@@ -1,10 +1,5 @@
-import {
-  expect,
-  test,
-  type BrowserContext,
-  type Locator,
-  type Page,
-} from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
+import { touchDrag } from "./helpers/touchDrag";
 
 async function keyboardDrag(page: Page, source: Locator, target: Locator) {
   const sourceBox = await source.boundingBox();
@@ -29,51 +24,6 @@ async function keyboardDrag(page: Page, source: Locator, target: Locator) {
   }
   await expect(target).toHaveClass(/trial-target/);
   await page.keyboard.press("Space");
-}
-
-async function touchDrag(
-  page: Page,
-  context: BrowserContext,
-  source: Locator,
-  target: Locator,
-) {
-  const sourceBox = await source.boundingBox();
-  const targetBox = await target.boundingBox();
-  if (!sourceBox || !targetBox)
-    throw new Error("タッチ操作の対象が表示されていません。");
-  const from = {
-    x: sourceBox.x + sourceBox.width / 2,
-    y: sourceBox.y + sourceBox.height / 2,
-  };
-  const to = {
-    x: targetBox.x + targetBox.width / 2,
-    y: targetBox.y + targetBox.height / 2,
-  };
-  const session = await context.newCDPSession(page);
-  try {
-    await session.send("Input.dispatchTouchEvent", {
-      type: "touchStart",
-      touchPoints: [from],
-    });
-    await page.waitForTimeout(300);
-    for (let step = 1; step <= 12; step += 1) {
-      await session.send("Input.dispatchTouchEvent", {
-        type: "touchMove",
-        touchPoints: [
-          {
-            x: from.x + ((to.x - from.x) * step) / 12,
-            y: from.y + ((to.y - from.y) * step) / 12,
-          },
-        ],
-      });
-    }
-    await session.send("Input.dispatchTouchEvent", {
-      type: "touchEnd",
-      touchPoints: [],
-    });
-  } finally {
-    await session.detach();
-  }
 }
 
 test("マウスで ×10 を追加し、配置済みの職業を変更できる", async ({ page }) => {
