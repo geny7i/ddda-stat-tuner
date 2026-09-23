@@ -1,5 +1,30 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 import { touchDrag } from "./helpers/touchDrag";
+
+async function keyboardDrag(page: Page, source: Locator, target: Locator) {
+  const sourceBox = await source.boundingBox();
+  const targetBox = await target.boundingBox();
+  if (!sourceBox || !targetBox)
+    throw new Error("ドラッグ元またはドロップ先が表示されていません。");
+
+  const deltaX =
+    targetBox.x + targetBox.width / 2 - sourceBox.x - sourceBox.width / 2;
+  const deltaY =
+    targetBox.y + targetBox.height / 2 - sourceBox.y - sourceBox.height / 2;
+  await source.focus();
+  await page.keyboard.press("Space");
+  for (const [delta, positive, negative] of [
+    [deltaX, "ArrowRight", "ArrowLeft"],
+    [deltaY, "ArrowDown", "ArrowUp"],
+  ] as const) {
+    const key = delta >= 0 ? positive : negative;
+    const steps = Math.round(Math.abs(delta) / 20);
+    for (let index = 0; index < steps; index += 1)
+      await page.keyboard.press(key);
+  }
+  await expect(target).toHaveClass(/path-target/);
+  await page.keyboard.press("Space");
+}
 
 test("育成経路をドラッグとボタンで編集し、切り替え後も保持する", async ({
   page,
@@ -36,6 +61,52 @@ test("育成経路をドラッグとボタンで編集し、切り替え後も�
     .getByRole("button", { name: "1 件削除" })
     .click();
   await expect(page.getByTestId("capacity-forLv100")).toHaveText("9/90");
+});
+
+test("キーボードで実画面の追加・変更・中止ができる", async ({ page }) => {
+  await page.goto("/#/");
+  await page.getByRole("button", { name: "Lv2～10 (0/9)" }).click();
+
+  await keyboardDrag(
+    page,
+    page.getByTestId("palette-fighter").getByRole("button", {
+      name: "fighter 1 件をドラッグまたは選択",
+      exact: true,
+    }),
+    page.getByTestId("range-forLv10"),
+  );
+  await expect(page.getByTestId("capacity-forLv10")).toHaveText("1/9");
+
+  await page
+    .getByTestId("palette-mage")
+    .getByRole("button", {
+      name: "mage 1 件をドラッグまたは選択",
+      exact: true,
+    })
+    .click();
+  await page
+    .getByTestId("range-forLv10")
+    .getByRole("button", { name: "選択を追加" })
+    .click();
+  await keyboardDrag(
+    page,
+    page.getByRole("button", {
+      name: "forLv10 の fighter 1 件をドラッグまたは選択",
+      exact: true,
+    }),
+    page.getByTestId("stack-forLv10-mage"),
+  );
+  await expect(page.getByTestId("count-forLv10-mage")).toHaveText("2 件");
+
+  const source = page.getByTestId("palette-fighter").getByRole("button", {
+    name: "fighter 1 件をドラッグまたは選択",
+    exact: true,
+  });
+  await source.focus();
+  await page.keyboard.press("Space");
+  await page.keyboard.press("ArrowRight");
+  await page.keyboard.press("Escape");
+  await expect(page.getByTestId("capacity-forLv10")).toHaveText("2/9");
 });
 
 test.describe("狭い画面", () => {

@@ -1,4 +1,4 @@
-.trial-page {
+.path-page {
   padding-bottom: 2rem;
 }
 
@@ -192,7 +192,7 @@
   font-size: 1.1rem;
 }
 
-.trial-page button {
+.path-page button {
   border: 1px solid #60758a;
   border-radius: 0.3rem;
   background: #fff;
@@ -201,104 +201,104 @@
   cursor: pointer;
 }
 
-.trial-page button:disabled {
+.path-page button:disabled {
   cursor: not-allowed;
   opacity: 0.5;
 }
 
-.trial-page button:focus-visible {
+.path-page button:focus-visible {
   outline: 3px solid #ff9d00;
   outline-offset: 2px;
 }
 
-.trial-layout {
+.path-layout {
   display: grid;
   grid-template-columns: minmax(15rem, 19rem) minmax(0, 1fr);
   gap: 1rem;
   align-items: start;
 }
 
-.trial-palette,
-.trial-board {
+.path-palette,
+.path-board {
   display: grid;
   gap: 0.65rem;
 }
 
-.trial-palette h2,
-.trial-board h2 {
+.path-palette h2,
+.path-board h2 {
   margin: 0;
 }
 
-.trial-card,
-.trial-range {
+.path-card,
+.path-range {
   border: 1px solid #a9b8c5;
   border-radius: 0.5rem;
   background: #fff;
   padding: 0.65rem;
 }
 
-.trial-actions,
-.trial-range-header,
-.trial-stacks {
+.path-actions,
+.path-range-header,
+.path-stacks {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
 }
 
-.trial-actions {
+.path-actions {
   margin-top: 0.5rem;
 }
 
-.trial-handle {
+.path-handle {
   touch-action: none;
   cursor: grab !important;
 }
 
-.trial-handle:active {
+.path-handle:active {
   cursor: grabbing !important;
 }
 
-.trial-range {
+.path-range {
   min-height: 5rem;
 }
 
-.trial-range h3 {
+.path-range h3 {
   margin: 0;
 }
 
-.trial-range-header button {
+.path-range-header button {
   margin-left: auto;
 }
 
-.trial-stacks {
+.path-stacks {
   min-height: 2rem;
   margin-top: 0.5rem;
 }
 
-.trial-stacks p {
+.path-stacks p {
   margin: 0;
 }
 
-.trial-stack {
+.path-stack {
   min-width: 12rem;
 }
 
-.trial-target {
+.path-target {
   border-color: #086b43;
   background: #e1f6e9;
 }
 
-.trial-rejected {
+.path-rejected {
   border-color: #9b5a25;
   background: #fff1e6;
 }
 
-.trial-full {
+.path-full {
   border-color: #9b5a25;
 }
 
-.trial-overlay {
+.path-overlay {
   border: 2px solid #086b43;
   border-radius: 0.4rem;
   background: #fff;
@@ -316,11 +316,11 @@
     gap: 0.35rem;
   }
 
-  .trial-layout {
+  .path-layout {
     grid-template-columns: 1fr;
   }
 
-  .trial-palette {
+  .path-palette {
     display: flex;
     flex-wrap: wrap;
     align-content: start;
@@ -328,12 +328,12 @@
     overflow-y: auto;
   }
 
-  .trial-palette h2,
-  .trial-palette p {
+  .path-palette h2,
+  .path-palette p {
     flex-basis: 100%;
   }
 
-  .trial-palette .trial-card {
+  .path-palette .path-card {
     flex: 1 1 9rem;
   }
 }
