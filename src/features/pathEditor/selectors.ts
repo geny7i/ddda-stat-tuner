@@ -2,6 +2,7 @@ import { createSelector } from "@reduxjs/toolkit";
 import type { RootState } from "../../app/store";
 import {
   calculateStatus,
+  countUnfilledLevels,
   getComparisonRows,
   getLevelRangeById,
 } from "../../domain";
@@ -22,6 +23,11 @@ export const selectCurrentLevel = createSelector(
   [selectEditorState],
   ({ path }) =>
     Object.values(path).reduce((sum, steps) => sum + steps.length, 0),
+);
+
+export const selectUnfilledCount = createSelector(
+  [(state: RootState) => state.editor.path],
+  countUnfilledLevels,
 );
 
 export const selectComparisonRows = createSelector(
