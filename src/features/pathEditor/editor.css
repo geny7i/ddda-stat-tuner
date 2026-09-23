@@ -16,6 +16,91 @@
   margin: 1.25rem 0;
 }
 
+.status-panel,
+.comparison-panel {
+  margin: 1rem 0;
+  border: 1px solid #a9b8c5;
+  border-radius: 0.5rem;
+  background: #fff;
+  padding: 1rem;
+}
+
+.status-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+}
+
+.status-heading h2,
+.comparison-panel h2 {
+  margin: 0 0 0.75rem;
+}
+
+.status-heading span {
+  font-weight: 700;
+}
+
+.status-values {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(5rem, 1fr));
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.status-values div {
+  border-radius: 0.35rem;
+  background: #eef3f7;
+  padding: 0.5rem;
+  text-align: center;
+}
+
+.status-values dt {
+  font-size: 0.85rem;
+}
+
+.status-values dd {
+  margin: 0.2rem 0 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.focus-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  border: 0;
+  padding: 0;
+}
+
+.focus-options label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.comparison-scroll {
+  overflow-x: auto;
+}
+
+.comparison-panel table {
+  width: 100%;
+  border-collapse: collapse;
+  white-space: nowrap;
+}
+
+.comparison-panel th,
+.comparison-panel td {
+  border-bottom: 1px solid #dce3e9;
+  padding: 0.4rem 0.55rem;
+  text-align: right;
+}
+
+.comparison-panel th:first-child {
+  text-align: left;
+}
+
 .editor-weight {
   display: flex;
   flex-wrap: wrap;
@@ -174,6 +259,10 @@
 }
 
 @media (max-width: 760px) {
+  .status-values {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
   .trial-layout {
     grid-template-columns: 1fr;
   }

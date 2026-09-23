@@ -68,7 +68,7 @@ test.describe("狭い画面", () => {
 
   test("実画面で指による追加ができる", async ({ page, context }) => {
     await page.goto("/#/");
-    await page.evaluate(() => window.scrollTo(0, 380));
+    await page.getByTestId("range-onlyLv1").scrollIntoViewIfNeeded();
     const scrollBefore = await page.evaluate(() => window.scrollY);
     await touchDrag(
       page,
