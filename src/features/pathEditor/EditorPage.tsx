@@ -1,4 +1,4 @@
-import { LEVEL_RANGES, WEIGHT_CLASSES, type WeightClass } from "../../domain";
+import { WEIGHT_CLASSES, type WeightClass } from "../../domain";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import {
   addSteps,
@@ -9,12 +9,13 @@ import {
   toggleFocusedStat,
 } from "./editorSlice";
 import { PathEditor } from "./PathEditor";
+import { FocusOptions } from "./FocusOptions";
 import { StatusSummary } from "./StatusSummary";
-import { VocationComparison } from "./VocationComparison";
 import { ShareButton } from "../sharing/ShareButton";
 import { LevelRangeSelector, rangeLabel } from "./LevelRangeSelector";
 import {
   selectCharacterInfo,
+  selectComparisonRows,
   selectCurrentLevel,
   selectCurrentStatus,
 } from "./selectors";
@@ -27,8 +28,7 @@ export function EditorPage() {
   const currentStatus = useAppSelector(selectCurrentStatus);
   const currentLevel = useAppSelector(selectCurrentLevel);
   const character = useAppSelector(selectCharacterInfo);
-  const selectedRange = LEVEL_RANGES.find(({ id }) => id === activeRange);
-  if (!selectedRange) throw new Error(`不明なレベル帯: ${activeRange}`);
+  const comparisonRows = useAppSelector(selectComparisonRows);
 
   return (
     <div className="editor-page">
@@ -65,11 +65,15 @@ export function EditorPage() {
       <h2 className="editor-current-range">
         編集中: {rangeLabel(activeRange)}
       </h2>
+      <FocusOptions
+        focusedStats={focusedStats}
+        onToggleFocus={(statId) => dispatch(toggleFocusedStat(statId))}
+      />
       <PathEditor
         key={activeRange}
         path={path}
         visibleRanges={[activeRange]}
-        vocations={selectedRange.availableVocationIds}
+        comparisonRows={comparisonRows}
         onAdd={(range, vocation, count) =>
           dispatch(addSteps({ range, vocation, count }))
         }
@@ -79,11 +83,6 @@ export function EditorPage() {
         onRemove={(range, vocation) =>
           dispatch(removeStep({ range, vocation }))
         }
-      />
-      <VocationComparison
-        range={selectedRange}
-        focusedStats={focusedStats}
-        onToggleFocus={(statId) => dispatch(toggleFocusedStat(statId))}
       />
     </div>
   );

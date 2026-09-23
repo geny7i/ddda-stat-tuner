@@ -1,7 +1,7 @@
-import { LEVEL_RANGES } from "../domain";
 import { useAppDispatch, useAppSelector } from "../app/hooks";
 import {
   selectCharacterInfo,
+  selectComparisonRows,
   selectCurrentLevel,
   selectCurrentStatus,
   selectEditorState,
@@ -13,6 +13,7 @@ import {
 import { LevelRangeSelector } from "../features/pathEditor/LevelRangeSelector";
 import { StatusSummary } from "../features/pathEditor/StatusSummary";
 import { VocationComparison } from "../features/pathEditor/VocationComparison";
+import { FocusOptions } from "../features/pathEditor/FocusOptions";
 import { ShareButton } from "../features/sharing/ShareButton";
 import "../features/pathEditor/editor.css";
 
@@ -22,8 +23,7 @@ export function ChartPage() {
   const character = useAppSelector(selectCharacterInfo);
   const status = useAppSelector(selectCurrentStatus);
   const level = useAppSelector(selectCurrentLevel);
-  const range = LEVEL_RANGES.find(({ id }) => id === activeRange);
-  if (!range) throw new Error(`不明なレベル帯: ${activeRange}`);
+  const comparisonRows = useAppSelector(selectComparisonRows);
 
   return (
     <div className="chart-page">
@@ -38,12 +38,11 @@ export function ChartPage() {
         path={path}
         onSelect={(id) => dispatch(setActiveRange(id))}
       />
-      <VocationComparison
-        range={range}
+      <FocusOptions
         focusedStats={focusedStats}
         onToggleFocus={(statId) => dispatch(toggleFocusedStat(statId))}
-        showChart
       />
+      <VocationComparison rows={comparisonRows} showChart />
     </div>
   );
 }

@@ -43,11 +43,10 @@ test("注目項目を物理攻撃だけにするとスコアと並び順が変�
   for (const label of ["HP", "ST", "魔法攻撃", "物理防御", "魔法防御"])
     await user.click(screen.getByRole("checkbox", { name: label }));
 
-  const table = screen.getByRole("table");
-  const dataRows = within(table).getAllByRole("row").slice(1);
-  expect(within(dataRows[0]).getByRole("rowheader")).toHaveTextContent(
-    "assassin",
-  );
+  const cards = within(
+    screen.getByRole("list", { name: "職業と成長値の一覧" }),
+  ).getAllByRole("listitem");
+  expect(cards[0]).toHaveAttribute("data-testid", "comparison-assassin");
   expect(screen.getByTestId("score-assassin")).toHaveTextContent("6");
   expect(screen.getByTestId("score-warrior")).toHaveTextContent("5");
   expect(store.getState().editor.focusedStats).toEqual(["atk"]);
