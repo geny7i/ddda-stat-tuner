@@ -112,6 +112,32 @@
   white-space: nowrap;
 }
 
+.score-chart {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style: none;
+}
+
+.score-chart li {
+  display: grid;
+  grid-template-columns: minmax(8rem, 11rem) minmax(8rem, 1fr) 4rem;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.score-chart meter {
+  width: 100%;
+  height: 1.25rem;
+  accent-color: #164f85;
+}
+
+.score-chart output {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
 .comparison-panel th,
 .comparison-panel td {
   border-bottom: 1px solid #dce3e9;
@@ -283,6 +309,11 @@
 @media (max-width: 760px) {
   .status-values {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .score-chart li {
+    grid-template-columns: minmax(6.5rem, 8rem) minmax(5rem, 1fr) 3rem;
+    gap: 0.35rem;
   }
 
   .trial-layout {

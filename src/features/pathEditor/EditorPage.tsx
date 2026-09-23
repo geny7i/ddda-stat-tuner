@@ -1,10 +1,4 @@
-import {
-  calculateStatus,
-  LEVEL_RANGES,
-  WEIGHT_CLASSES,
-  type LevelRangeId,
-  type WeightClass,
-} from "../../domain";
+import { LEVEL_RANGES, WEIGHT_CLASSES, type WeightClass } from "../../domain";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import {
   addSteps,
@@ -18,28 +12,23 @@ import { PathEditor } from "./PathEditor";
 import { StatusSummary } from "./StatusSummary";
 import { VocationComparison } from "./VocationComparison";
 import { ShareButton } from "../sharing/ShareButton";
-
-function rangeLabel(id: LevelRangeId): string {
-  const range = LEVEL_RANGES.find((candidate) => candidate.id === id);
-  if (!range) throw new Error(`不明なレベル帯: ${id}`);
-  return `Lv${range.from}～${range.to}`;
-}
+import { LevelRangeSelector, rangeLabel } from "./LevelRangeSelector";
+import {
+  selectCharacterInfo,
+  selectCurrentLevel,
+  selectCurrentStatus,
+} from "./selectors";
 
 export function EditorPage() {
   const dispatch = useAppDispatch();
   const { path, activeRange, weightClass, focusedStats } = useAppSelector(
     (state) => state.editor,
   );
+  const currentStatus = useAppSelector(selectCurrentStatus);
+  const currentLevel = useAppSelector(selectCurrentLevel);
+  const character = useAppSelector(selectCharacterInfo);
   const selectedRange = LEVEL_RANGES.find(({ id }) => id === activeRange);
   if (!selectedRange) throw new Error(`不明なレベル帯: ${activeRange}`);
-  const currentStatus = calculateStatus({
-    vocationPath: path,
-    weightClass,
-  });
-  const currentLevel = Object.values(path).reduce(
-    (sum, steps) => sum + steps.length,
-    0,
-  );
 
   return (
     <div className="editor-page">
@@ -47,7 +36,7 @@ export function EditorPage() {
       <p>レベル帯を選び、職業を追加・変更・削除して育成経路を組み立てます。</p>
 
       <StatusSummary status={currentStatus} level={currentLevel} />
-      <ShareButton character={{ vocationPath: path, weightClass }} />
+      <ShareButton character={character} />
 
       <div className="editor-controls">
         <fieldset className="editor-weight">
@@ -66,21 +55,11 @@ export function EditorPage() {
           ))}
         </fieldset>
 
-        <section aria-label="レベル帯の選択">
-          <h2>レベル帯</h2>
-          <div className="editor-range-list">
-            {LEVEL_RANGES.map(({ id, from, to }) => (
-              <button
-                key={id}
-                type="button"
-                aria-pressed={activeRange === id}
-                onClick={() => dispatch(setActiveRange(id))}
-              >
-                Lv{from}～{to} ({path[id].length}/{to - from + 1})
-              </button>
-            ))}
-          </div>
-        </section>
+        <LevelRangeSelector
+          activeRange={activeRange}
+          path={path}
+          onSelect={(id) => dispatch(setActiveRange(id))}
+        />
       </div>
 
       <h2 className="editor-current-range">

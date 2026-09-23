@@ -19,6 +19,8 @@ test("メニューからチャート画面へ移動できる", async () => {
 
   expect(screen.getByRole("heading", { name: "育成計画" })).toBeInTheDocument();
   await user.click(screen.getByRole("link", { name: "チャート" }));
-  expect(screen.getByRole("heading", { name: "チャート" })).toBeInTheDocument();
+  expect(
+    screen.getByRole("heading", { name: "職業比較チャート" }),
+  ).toBeInTheDocument();
   expect(window.location.hash).toBe("#/chart");
 });
