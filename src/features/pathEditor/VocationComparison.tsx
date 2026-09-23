@@ -11,10 +11,12 @@ export function VocationComparison({
   range,
   focusedStats,
   onToggleFocus,
+  showChart = false,
 }: {
   range: LevelRange;
   focusedStats: readonly StatId[];
   onToggleFocus: (statId: StatId) => void;
+  showChart?: boolean;
 }) {
   const rows = sortByFocusedStatIds(
     range.availableVocationIds.map((vocationId) =>
@@ -22,6 +24,7 @@ export function VocationComparison({
     ),
     focusedStats,
   );
+  const maxScore = Math.max(1, ...rows.map(({ score }) => score));
 
   return (
     <section
@@ -42,6 +45,19 @@ export function VocationComparison({
           </label>
         ))}
       </fieldset>
+      {showChart && (
+        <ul className="score-chart" aria-label="職業スコアの比較">
+          {rows.map(({ vocationId, score }) => (
+            <li key={vocationId}>
+              <span>{vocationId}</span>
+              <meter min="0" max={maxScore} value={score}>
+                {score}
+              </meter>
+              <output>{score}</output>
+            </li>
+          ))}
+        </ul>
+      )}
       <div className="comparison-scroll">
         <table>
           <thead>

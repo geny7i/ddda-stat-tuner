@@ -9,6 +9,13 @@ body {
   margin: 0;
 }
 
+a:focus-visible,
+button:focus-visible,
+input:focus-visible {
+  outline: 3px solid #ff9d00;
+  outline-offset: 2px;
+}
+
 .layout {
   max-width: 72rem;
   margin: 0 auto;
@@ -20,9 +27,18 @@ header {
   border-bottom: 1px solid #dce3e9;
 }
 
+.header-layout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem 2rem;
+}
+
 .site-title {
-  margin: 0 0 0.75rem;
+  color: #18212b;
+  font-size: 1.1rem;
   font-weight: 700;
+  text-decoration: none;
 }
 
 nav {
@@ -33,12 +49,57 @@ nav {
 
 nav a {
   color: #164f85;
+  border-radius: 0.25rem;
+  padding: 0.25rem 0.4rem;
+  text-decoration: none;
 }
 
 nav a[aria-current="page"] {
+  background: #e6f0fa;
   font-weight: 700;
 }
 
 main {
   min-height: 60vh;
+}
+
+.skip-link {
+  position: fixed;
+  z-index: 100;
+  top: 0.5rem;
+  left: 0.5rem;
+  border: 1px solid #164f85;
+  border-radius: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  background: #fff;
+  color: #164f85;
+  cursor: pointer;
+  font: inherit;
+  transform: translateY(-200%);
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+.chart-page,
+.legal-page {
+  padding-bottom: 2rem;
+}
+
+.legal-page {
+  max-width: 48rem;
+}
+
+.legal-page hr {
+  margin: 2rem 0;
+  border: 0;
+  border-top: 1px solid #dce3e9;
+}
+
+@media (max-width: 600px) {
+  .header-layout {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }
