@@ -1,4 +1,5 @@
 import {
+  calculateStatus,
   LEVEL_RANGES,
   WEIGHT_CLASSES,
   type LevelRangeId,
@@ -11,8 +12,11 @@ import {
   replaceStep,
   setActiveRange,
   setWeightClass,
+  toggleFocusedStat,
 } from "./editorSlice";
 import { PathEditor } from "./PathEditor";
+import { StatusSummary } from "./StatusSummary";
+import { VocationComparison } from "./VocationComparison";
 
 function rangeLabel(id: LevelRangeId): string {
   const range = LEVEL_RANGES.find((candidate) => candidate.id === id);
@@ -22,16 +26,26 @@ function rangeLabel(id: LevelRangeId): string {
 
 export function EditorPage() {
   const dispatch = useAppDispatch();
-  const { path, activeRange, weightClass } = useAppSelector(
+  const { path, activeRange, weightClass, focusedStats } = useAppSelector(
     (state) => state.editor,
   );
   const selectedRange = LEVEL_RANGES.find(({ id }) => id === activeRange);
   if (!selectedRange) throw new Error(`不明なレベル帯: ${activeRange}`);
+  const currentStatus = calculateStatus({
+    vocationPath: path,
+    weightClass,
+  });
+  const currentLevel = Object.values(path).reduce(
+    (sum, steps) => sum + steps.length,
+    0,
+  );
 
   return (
     <div className="editor-page">
       <h1>育成計画</h1>
       <p>レベル帯を選び、職業を追加・変更・削除して育成経路を組み立てます。</p>
+
+      <StatusSummary status={currentStatus} level={currentLevel} />
 
       <div className="editor-controls">
         <fieldset className="editor-weight">
@@ -84,6 +98,11 @@ export function EditorPage() {
         onRemove={(range, vocation) =>
           dispatch(removeStep({ range, vocation }))
         }
+      />
+      <VocationComparison
+        range={selectedRange}
+        focusedStats={focusedStats}
+        onToggleFocus={(statId) => dispatch(toggleFocusedStat(statId))}
       />
     </div>
   );

@@ -6,6 +6,8 @@ import {
   type LevelRangeId,
   type VocationId,
   type VocationPath,
+  STAT_IDS,
+  type StatId,
   type WeightClass,
 } from "../../domain";
 
@@ -13,12 +15,14 @@ export type EditorState = {
   path: VocationPath;
   weightClass: WeightClass;
   activeRange: LevelRangeId;
+  focusedStats: StatId[];
 };
 
 const initialState: EditorState = {
   path: { onlyLv1: [], forLv10: [], forLv100: [], forLv200: [] },
   weightClass: "m",
   activeRange: "onlyLv1",
+  focusedStats: [...STAT_IDS],
 };
 
 const editorSlice = createSlice({
@@ -30,6 +34,11 @@ const editorSlice = createSlice({
     },
     setWeightClass(state, action: PayloadAction<WeightClass>) {
       state.weightClass = action.payload;
+    },
+    toggleFocusedStat(state, action: PayloadAction<StatId>) {
+      const index = state.focusedStats.indexOf(action.payload);
+      if (index < 0) state.focusedStats.push(action.payload);
+      else state.focusedStats.splice(index, 1);
     },
     addSteps(
       state,
@@ -69,6 +78,7 @@ const editorSlice = createSlice({
 export const {
   setActiveRange,
   setWeightClass,
+  toggleFocusedStat,
   addSteps,
   replaceStep,
   removeStep,

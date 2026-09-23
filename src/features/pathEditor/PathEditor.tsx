@@ -451,8 +451,10 @@ export function PathEditor({
             )}
           </section>
         </div>
-        <DragOverlay dropAnimation={null} className="trial-overlay">
-          {(source) => <span>{sourceLabel(source.id)}</span>}
+        <DragOverlay dropAnimation={null}>
+          {(source) => (
+            <span className="trial-overlay">{sourceLabel(source.id)}</span>
+          )}
         </DragOverlay>
       </DragDropProvider>
     </div>
