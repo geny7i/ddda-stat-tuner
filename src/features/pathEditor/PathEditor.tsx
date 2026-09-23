@@ -66,7 +66,7 @@ function CountHandle({
     <button
       ref={ref}
       type="button"
-      className="trial-handle"
+      className="path-handle"
       aria-label={`${vocationId} ${count} 件をドラッグまたは選択`}
       onClick={() => onSelect({ vocationId, count })}
     >
@@ -102,16 +102,16 @@ function PaletteCard({
   return (
     <div
       ref={targetRef}
-      className={`trial-card ${isDropTarget ? (draggedStack && draggedStack.vocationId !== vocationId && isVocationAvailable(draggedStack.rangeId, vocationId) ? "trial-target" : "trial-rejected") : ""}`}
+      className={`path-card ${isDropTarget ? (draggedStack && draggedStack.vocationId !== vocationId && isVocationAvailable(draggedStack.rangeId, vocationId) ? "path-target" : "path-rejected") : ""}`}
       data-testid={`palette-${vocationId}`}
     >
       <div ref={ref}>
         <strong>{vocationId}</strong>
-        <div className="trial-actions">
+        <div className="path-actions">
           <button
             ref={handleRef}
             type="button"
-            className="trial-handle"
+            className="path-handle"
             aria-label={`${vocationId} 1 件をドラッグまたは選択`}
             onClick={() => onSelect({ vocationId, count: 1 })}
           >
@@ -178,17 +178,17 @@ function StackCard({
   return (
     <article
       ref={targetRef}
-      className={`trial-card trial-stack ${isDropTarget ? (draggedStack && draggedStack.rangeId === range && draggedStack.vocationId !== vocation ? "trial-target" : "trial-rejected") : ""}`}
+      className={`path-card path-stack ${isDropTarget ? (draggedStack && draggedStack.rangeId === range && draggedStack.vocationId !== vocation ? "path-target" : "path-rejected") : ""}`}
       data-testid={`stack-${range}-${vocation}`}
     >
       <div ref={sourceRef}>
         <strong>{vocation}</strong>{" "}
         <span data-testid={`count-${range}-${vocation}`}>{count} 件</span>
-        <div className="trial-actions">
+        <div className="path-actions">
           <button
             ref={handleRef}
             type="button"
-            className="trial-handle"
+            className="path-handle"
             aria-label={`${range} の ${vocation} 1 件をドラッグまたは選択`}
             onClick={() =>
               onSelectSource({ rangeId: range, vocationId: vocation })
@@ -257,11 +257,11 @@ function RangeArea({
   return (
     <section
       ref={targetRef}
-      className={`trial-range ${isDropTarget ? (!full && draggedSelection && isVocationAvailable(range, draggedSelection.vocationId) ? "trial-target" : "trial-rejected") : ""} ${full ? "trial-full" : ""}`}
+      className={`path-range ${isDropTarget ? (!full && draggedSelection && isVocationAvailable(range, draggedSelection.vocationId) ? "path-target" : "path-rejected") : ""} ${full ? "path-full" : ""}`}
       data-testid={`range-${range}`}
       aria-label={`レベル帯 ${range}`}
     >
-      <div className="trial-range-header">
+      <div className="path-range-header">
         <h3>
           Lv{definition.from}～{definition.to}
         </h3>
@@ -272,7 +272,7 @@ function RangeArea({
           選択を追加
         </button>
       </div>
-      <div className="trial-stacks">
+      <div className="path-stacks">
         {[...counts].map(([vocation, count]) => (
           <StackCard
             key={vocation}
@@ -323,8 +323,8 @@ export function PathEditor({
   );
 
   return (
-    <div className="trial-page">
-      <p id="trial-instructions">
+    <div className="path-page">
+      <p id="path-instructions">
         各 ×
         ボタンをドラッグし、右側のレベル帯にドロップします。配置済みの職業は別の職業へドラッグして変更します。キーボードでは
         Space で持ち上げ、矢印キーで移動し、Space で確定、Escape
@@ -399,8 +399,8 @@ export function PathEditor({
           }
         }}
       >
-        <div className="trial-layout">
-          <section aria-label="職業の選択肢" className="trial-palette">
+        <div className="path-layout">
+          <section aria-label="職業の選択肢" className="path-palette">
             <h2>職業の選択肢</h2>
             {vocations.map((vocationId) => (
               <PaletteCard
@@ -424,7 +424,7 @@ export function PathEditor({
               {selected ? `${selected.vocationId} ×${selected.count}` : "なし"}
             </p>
           </section>
-          <section aria-label="育成経路" className="trial-board">
+          <section aria-label="育成経路" className="path-board">
             <h2>育成経路</h2>
             {LEVEL_RANGES.filter(({ id }) => visibleRanges.includes(id)).map(
               ({ id }) => (
@@ -453,7 +453,7 @@ export function PathEditor({
         </div>
         <DragOverlay dropAnimation={null}>
           {(source) => (
-            <span className="trial-overlay">{sourceLabel(source.id)}</span>
+            <span className="path-overlay">{sourceLabel(source.id)}</span>
           )}
         </DragOverlay>
       </DragDropProvider>
