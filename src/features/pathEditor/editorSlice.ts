@@ -1,6 +1,8 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import {
   addToPath,
+  type CharacterInfo,
+  LEVEL_RANGES,
   removeFromPath,
   replaceInPath,
   type LevelRangeId,
@@ -39,6 +41,14 @@ const editorSlice = createSlice({
       const index = state.focusedStats.indexOf(action.payload);
       if (index < 0) state.focusedStats.push(action.payload);
       else state.focusedStats.splice(index, 1);
+    },
+    restoreCharacter(state, action: PayloadAction<CharacterInfo>) {
+      const { vocationPath, weightClass } = action.payload;
+      state.weightClass = weightClass;
+      for (const { id } of LEVEL_RANGES) state.path[id] = [...vocationPath[id]];
+      state.activeRange =
+        LEVEL_RANGES.find(({ id }) => vocationPath[id].length > 0)?.id ??
+        "onlyLv1";
     },
     addSteps(
       state,
@@ -79,6 +89,7 @@ export const {
   setActiveRange,
   setWeightClass,
   toggleFocusedStat,
+  restoreCharacter,
   addSteps,
   replaceStep,
   removeStep,

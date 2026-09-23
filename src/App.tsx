@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import { HashRouter, NavLink, Route, Routes } from "react-router";
 import { EditorPage } from "./features/pathEditor/EditorPage";
+import { RestorePage } from "./features/sharing/RestorePage";
 
 const TrialPage = import.meta.env.DEV
   ? lazy(() =>
@@ -45,6 +46,7 @@ export function App() {
           <Route path="/" element={<EditorPage />} />
           <Route path="/chart" element={<Page title="チャート" />} />
           <Route path="/disclaimer" element={<Page title="免責事項" />} />
+          <Route path="/restore" element={<RestorePage />} />
           {TrialPage && (
             <Route
               path="/dnd-trial"

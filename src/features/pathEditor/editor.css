@@ -25,6 +25,28 @@
   padding: 1rem;
 }
 
+.share-control {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin: -0.25rem 0 1rem;
+}
+
+.share-control button {
+  border: 1px solid #164f85;
+  border-radius: 0.35rem;
+  background: #164f85;
+  color: #fff;
+  padding: 0.45rem 0.75rem;
+  cursor: pointer;
+}
+
+.share-control button:focus-visible {
+  outline: 3px solid #ff9d00;
+  outline-offset: 2px;
+}
+
 .status-heading {
   display: flex;
   justify-content: space-between;
