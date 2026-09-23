@@ -1,7 +1,13 @@
-import { WEIGHT_CLASSES, type WeightClass } from "../../domain";
-import { useAppDispatch, useAppSelector } from "../../app/hooks";
+import {
+  countUnfilledLevels,
+  WEIGHT_CLASSES,
+  type StatId,
+  type WeightClass,
+} from "../../domain";
+import { useAppDispatch, useAppSelector, useAppStore } from "../../app/hooks";
 import {
   addSteps,
+  applyAdjustment,
   removeStep,
   replaceStep,
   setActiveRange,
@@ -9,6 +15,7 @@ import {
   toggleFocusedStat,
 } from "./editorSlice";
 import { PathEditor } from "./PathEditor";
+import { AdjustmentControls } from "./AdjustmentControls";
 import { FocusOptions } from "./FocusOptions";
 import { StatusSummary } from "./StatusSummary";
 import { ShareButton } from "../sharing/ShareButton";
@@ -18,10 +25,12 @@ import {
   selectComparisonRows,
   selectCurrentLevel,
   selectCurrentStatus,
+  selectUnfilledCount,
 } from "./selectors";
 
 export function EditorPage() {
   const dispatch = useAppDispatch();
+  const appStore = useAppStore();
   const { path, activeRange, weightClass, focusedStats } = useAppSelector(
     (state) => state.editor,
   );
@@ -29,6 +38,18 @@ export function EditorPage() {
   const currentLevel = useAppSelector(selectCurrentLevel);
   const character = useAppSelector(selectCharacterInfo);
   const comparisonRows = useAppSelector(selectComparisonRows);
+  const unfilledCount = useAppSelector(selectUnfilledCount);
+
+  function applySelectedAdjustment(statId: StatId): number {
+    const before = countUnfilledLevels(appStore.getState().editor.path);
+    dispatch(
+      applyAdjustment({
+        strategy: { kind: "maximize-stat", statId },
+        scope: { kind: "unfilled" },
+      }),
+    );
+    return before - countUnfilledLevels(appStore.getState().editor.path);
+  }
 
   return (
     <div className="editor-page">
@@ -39,6 +60,10 @@ export function EditorPage() {
       <ShareButton character={character} />
 
       <div className="editor-controls">
+        <AdjustmentControls
+          unfilledCount={unfilledCount}
+          onApply={applySelectedAdjustment}
+        />
         <fieldset className="editor-weight">
           <legend>体格</legend>
           {WEIGHT_CLASSES.map((value) => (

@@ -16,6 +16,75 @@
   margin: 1.25rem 0;
 }
 
+.adjustment-panel {
+  border: 1px solid #a9b8c5;
+  border-radius: 0.5rem;
+  background: #fff;
+  padding: 1rem;
+}
+
+.adjustment-panel h2 {
+  margin: 0 0 0.75rem;
+}
+
+.adjustment-panel label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-weight: 700;
+}
+
+.adjustment-panel select {
+  width: min(100%, 24rem);
+  min-height: 2.5rem;
+  border: 1px solid #60758a;
+  border-radius: 0.35rem;
+  background: #fff;
+  color: #18212b;
+  padding: 0.4rem;
+  font: inherit;
+}
+
+.adjustment-panel select:focus-visible,
+.adjustment-panel button:focus-visible {
+  outline: 3px solid #ff9d00;
+  outline-offset: 2px;
+}
+
+.adjustment-panel p {
+  margin: 0.75rem 0;
+}
+
+.adjustment-action {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.adjustment-action button {
+  border: 1px solid #164f85;
+  border-radius: 0.35rem;
+  background: #164f85;
+  color: #fff;
+  padding: 0.45rem 0.75rem;
+  font: inherit;
+  cursor: pointer;
+}
+
+.adjustment-action button:disabled {
+  border-color: #60758a;
+  background: #60758a;
+  cursor: not-allowed;
+}
+
+.adjustment-panel .adjustment-result {
+  margin-bottom: 0;
+}
+
+.adjustment-result:empty {
+  display: none;
+}
+
 .status-panel,
 .comparison-panel {
   min-width: 0;

@@ -1,11 +1,13 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import {
   addToPath,
+  adjustPath,
   type CharacterInfo,
   LEVEL_RANGES,
   removeFromPath,
   replaceInPath,
   type LevelRangeId,
+  type PathAdjustmentRequest,
   type VocationId,
   type VocationPath,
   STAT_IDS,
@@ -82,6 +84,11 @@ const editorSlice = createSlice({
       const next = removeFromPath(state.path, range, vocation);
       if (next !== state.path) state.path[range] = [...next[range]];
     },
+    applyAdjustment(state, action: PayloadAction<PathAdjustmentRequest>) {
+      const result = adjustPath(state.path, action.payload);
+      if (result.changedCount === 0) return;
+      for (const { id } of LEVEL_RANGES) state.path[id] = [...result.path[id]];
+    },
   },
 });
 
@@ -93,5 +100,6 @@ export const {
   addSteps,
   replaceStep,
   removeStep,
+  applyAdjustment,
 } = editorSlice.actions;
 export const editorReducer = editorSlice.reducer;
