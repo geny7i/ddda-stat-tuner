@@ -91,16 +91,12 @@ export function AdjustmentControls({
         setResultMessage(
           `実行には残り${result.unfilledCount}Lvの選択が必要です。`,
         );
-      } else if (result.kind === "not-found") {
-        setResultMessage(
-          "設定した探索範囲では条件を満たす経路が見つかりませんでした。",
-        );
       } else {
         setRoundingResult(result);
         setResultMessage(
           result.changedCount === 0
             ? `全ステータスはすでに${multiple}の倍数です。変更はありません。`
-            : `全ステータスを${multiple}の倍数に調整し、${result.changedCount}Lvを変更しました。探索で見つかった候補の中で最高スコアです。`,
+            : `全ステータスを${multiple}の倍数に調整し、${result.changedCount}Lvを変更しました。強みとスコアの低下を抑えるように調整しました。`,
         );
       }
     } catch (error) {
@@ -137,9 +133,9 @@ export function AdjustmentControls({
       <p id="adjustment-description">
         {rounding ? (
           <>
-            全200Lvの選択後に実行できます。最大10Lvの職業を入れ替え、6ステータスすべてを
+            全200Lvの選択後に実行できます。最大26Lvの職業を入れ替え、6ステータスすべてを
             {kind === "round-5" ? 5 : 10}
-            の倍数にします。探索で見つかった候補からスコアが高いものを選びます。
+            の倍数にします。相対的に高い能力とスコアの低下を抑えるように調整します。
           </>
         ) : (
           <>
@@ -153,7 +149,7 @@ export function AdjustmentControls({
           {rounding
             ? unfilledCount > 0
               ? `実行には残り${unfilledCount}Lvの選択が必要です。`
-              : "変更対象: 最大10Lv"
+              : "変更対象: 最大26Lv"
             : `変更対象: ${unfilledCount} レベル`}
         </span>
         <button

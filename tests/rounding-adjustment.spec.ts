@@ -103,18 +103,21 @@ test("狭い画面でも倍数調整の説明と結果を読める", async ({ pa
   ).toBeLessThanOrEqual(390);
 });
 
-test("探索範囲で見つからない場合は経路を変更しない", async ({ page }) => {
+test("以前は見つからなかった経路でも10の倍数に調整できる", async ({ page }) => {
   await page.goto("/#/restore?c=1-m-z-z9-z5a-z64");
-  const before = await page.getByTestId("current-hp").textContent();
   await page
     .getByRole("combobox", { name: "調整の種類" })
     .selectOption("round-10");
   await page.getByRole("button", { name: "自動調整を実行" }).click();
   await expect(page.locator(".adjustment-result")).toContainText(
-    "設定した探索範囲では条件を満たす経路が見つかりませんでした",
+    "10の倍数に調整し",
   );
-  await expect(page.getByTestId("current-hp")).toHaveText(before ?? "");
+  for (const id of STAT_IDS) {
+    expect(
+      Number(await page.getByTestId(`current-${id}`).textContent()) % 10,
+    ).toBe(0);
+  }
   await expect(
     page.getByRole("table", { name: "調整前後のステータスとスコア" }),
-  ).toHaveCount(0);
+  ).toBeVisible();
 });
