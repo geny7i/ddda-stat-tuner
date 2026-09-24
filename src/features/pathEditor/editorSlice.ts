@@ -98,6 +98,24 @@ const editorSlice = createSlice({
       if (result.changedCount === 0) return;
       for (const { id } of LEVEL_RANGES) state.path[id] = [...result.path[id]];
     },
+    applyRoundingAdjustment(
+      state,
+      action: PayloadAction<{ expected: CharacterInfo; path: VocationPath }>,
+    ) {
+      if (state.weightClass !== action.payload.expected.weightClass) return;
+      for (const { id } of LEVEL_RANGES) {
+        const current = state.path[id];
+        const expected = action.payload.expected.vocationPath[id];
+        if (
+          current.length !== expected.length ||
+          current.some((vocation, index) => vocation !== expected[index])
+        )
+          return;
+      }
+      for (const { id } of LEVEL_RANGES) {
+        state.path[id] = [...action.payload.path[id]];
+      }
+    },
   },
 });
 
@@ -111,5 +129,6 @@ export const {
   removeStep,
   removeAllSteps,
   applyAdjustment,
+  applyRoundingAdjustment,
 } = editorSlice.actions;
 export const editorReducer = editorSlice.reducer;

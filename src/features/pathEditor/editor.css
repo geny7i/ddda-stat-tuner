@@ -162,6 +162,30 @@
   display: none;
 }
 
+.adjustment-comparison {
+  margin-top: 0.75rem;
+  border-collapse: collapse;
+  width: min(100%, 28rem);
+  font-variant-numeric: tabular-nums;
+}
+
+.adjustment-comparison caption {
+  text-align: left;
+  font-weight: 700;
+  margin-bottom: 0.35rem;
+}
+
+.adjustment-comparison th,
+.adjustment-comparison td {
+  border-bottom: 1px solid #d7e0e8;
+  padding: 0.3rem 0.5rem;
+  text-align: right;
+}
+
+.adjustment-comparison th:first-child {
+  text-align: left;
+}
+
 .status-panel,
 .comparison-panel {
   min-width: 0;

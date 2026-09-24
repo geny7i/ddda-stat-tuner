@@ -3,6 +3,9 @@ import { createAppStore } from "../../app/store";
 import {
   addSteps,
   applyAdjustment,
+  applyRoundingAdjustment,
+  replaceStep,
+  restoreCharacter,
   setActiveRange,
   setWeightClass,
 } from "./editorSlice";
@@ -58,4 +61,42 @@ test("満杯では経路を更新しない", () => {
     }),
   );
   expect(store.getState()).toBe(full);
+});
+
+test("倍数調整は開始時の経路と体格が一致する場合だけ一度に反映する", () => {
+  const store = createAppStore();
+  const expected = {
+    vocationPath: {
+      onlyLv1: ["fighter"],
+      forLv10: Array(9).fill("fighter"),
+      forLv100: Array(90).fill("fighter"),
+      forLv200: Array(100).fill("fighter"),
+    },
+    weightClass: "m",
+  } as const;
+  const path = {
+    ...expected.vocationPath,
+    forLv200: ["strider", ...Array(99).fill("fighter")],
+  };
+  store.dispatch(restoreCharacter(expected));
+  let updates = 0;
+  const unsubscribe = store.subscribe(() => {
+    updates++;
+  });
+  store.dispatch(applyRoundingAdjustment({ expected, path }));
+  unsubscribe();
+  expect(updates).toBe(1);
+  expect(store.getState().editor.path.forLv200[0]).toBe("strider");
+
+  store.dispatch(restoreCharacter(expected));
+  store.dispatch(setWeightClass("ll"));
+  store.dispatch(applyRoundingAdjustment({ expected, path }));
+  expect(store.getState().editor.path.forLv200[0]).toBe("fighter");
+
+  store.dispatch(setWeightClass("m"));
+  store.dispatch(
+    replaceStep({ range: "forLv200", source: "fighter", target: "mage" }),
+  );
+  store.dispatch(applyRoundingAdjustment({ expected, path }));
+  expect(store.getState().editor.path.forLv200[0]).toBe("mage");
 });
