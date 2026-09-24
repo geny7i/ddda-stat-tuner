@@ -60,13 +60,13 @@ export function LevelRangeSelector({
                     {[...counts].map(([vocationId, count]) => (
                       <span className="editor-range-count" key={vocationId}>
                         <VocationIcon vocationId={vocationId} />
-                        <span>{count}</span>
+                        <span>{count}Lv</span>
                       </span>
                     ))}
                   </span>
                   <span id={descriptionId} className="visually-hidden">
                     {[...counts]
-                      .map(([vocationId, count]) => `${vocationId} ${count}件`)
+                      .map(([vocationId, count]) => `${vocationId} ${count}Lv`)
                       .join("、")}
                   </span>
                 </>

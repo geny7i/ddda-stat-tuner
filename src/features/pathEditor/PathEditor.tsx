@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   DragDropProvider,
   DragOverlay,
@@ -38,13 +38,49 @@ import "./editor.css";
 
 type Selection = { vocationId: VocationId; count: number };
 type StackSelection = { rangeId: LevelRangeId; vocationId: VocationId };
+type EditorSelection =
+  ({ kind: "add" } & Selection) | ({ kind: "replace" } & StackSelection) | null;
+
+function useSelectionPressedRef(
+  selected: boolean,
+  attachDraggable: (element: Element | null) => void,
+) {
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
+  const attach = useCallback(
+    (button: HTMLButtonElement | null) => {
+      buttonRef.current = button;
+      attachDraggable(button);
+    },
+    [attachDraggable],
+  );
+
+  useEffect(() => {
+    const button = buttonRef.current;
+    if (!button) return;
+    // dnd-kit also writes aria-pressed for drag state; selection owns this value.
+    const sync = () => {
+      const value = String(selected);
+      if (button.getAttribute("aria-pressed") !== value)
+        button.setAttribute("aria-pressed", value);
+    };
+    const observer = new MutationObserver(sync);
+    observer.observe(button, {
+      attributes: true,
+      attributeFilter: ["aria-pressed"],
+    });
+    sync();
+    return () => observer.disconnect();
+  }, [selected]);
+
+  return attach;
+}
 
 function sourceLabel(id: string | number): string {
   const source = parseSource(id);
   if (source?.kind === "selection")
-    return `${source.vocationId} ${source.count} 件`;
+    return `${source.vocationId} ${source.count}Lv`;
   if (source?.kind === "stack")
-    return `${source.rangeId} の ${source.vocationId} 1 件`;
+    return `${source.rangeId} の ${source.vocationId} 1Lv`;
   return String(id);
 }
 
@@ -60,18 +96,24 @@ function targetLabel(id: string | number): string {
 function CountHandle({
   vocationId,
   count,
+  selected,
   onSelect,
-}: Selection & { onSelect: (selection: Selection) => void }) {
+}: Selection & {
+  selected: boolean;
+  onSelect: (selection: Selection) => void;
+}) {
   const { ref } = useDraggable({
     id: selectionId(vocationId, count),
     type: "selection",
   });
+  const pressedRef = useSelectionPressedRef(selected, ref);
   return (
     <button
-      ref={ref}
+      ref={pressedRef}
       type="button"
-      className="path-handle"
-      aria-label={`${vocationId} ${count} 件をドラッグまたは選択`}
+      className={`path-handle ${selected ? "path-selected-handle" : ""}`}
+      aria-label={`${vocationId} ${count}Lvをドラッグまたは選択${selected ? "、選択中" : ""}`}
+      aria-pressed={selected}
       onClick={() => onSelect({ vocationId, count })}
     >
       ×{count}
@@ -82,12 +124,14 @@ function CountHandle({
 function PaletteCard({
   vocationId,
   onSelect,
+  selectedAddition,
   selectedSource,
   draggedStack,
   onReplace,
 }: {
   vocationId: VocationId;
   onSelect: (selection: Selection) => void;
+  selectedAddition: Selection | null;
   selectedSource: StackSelection | null;
   draggedStack: StackSelection | null;
   onReplace: () => void;
@@ -103,6 +147,9 @@ function PaletteCard({
     id: selectionId(vocationId, 1),
     type: "selection",
   });
+  const oneSelected =
+    selectedAddition?.vocationId === vocationId && selectedAddition.count === 1;
+  const pressedRef = useSelectionPressedRef(oneSelected, handleRef);
   return (
     <div
       ref={targetRef}
@@ -116,18 +163,31 @@ function PaletteCard({
         </strong>
         <div className="path-actions">
           <button
-            ref={handleRef}
+            ref={pressedRef}
             type="button"
-            className="path-handle"
-            aria-label={`${vocationId} 1 件をドラッグまたは選択`}
+            className={`path-handle ${oneSelected ? "path-selected-handle" : ""}`}
+            aria-label={`${vocationId} 1Lvをドラッグまたは選択${oneSelected ? "、選択中" : ""}`}
+            aria-pressed={oneSelected}
             onClick={() => onSelect({ vocationId, count: 1 })}
           >
             ×1
           </button>
-          <CountHandle vocationId={vocationId} count={10} onSelect={onSelect} />
+          <CountHandle
+            vocationId={vocationId}
+            count={10}
+            selected={
+              selectedAddition?.vocationId === vocationId &&
+              selectedAddition.count === 10
+            }
+            onSelect={onSelect}
+          />
           <CountHandle
             vocationId={vocationId}
             count={100}
+            selected={
+              selectedAddition?.vocationId === vocationId &&
+              selectedAddition.count === 100
+            }
             onSelect={onSelect}
           />
         </div>
@@ -140,7 +200,7 @@ function PaletteCard({
             }
             onClick={onReplace}
           >
-            この職業へ変更
+            1Lv入替
           </button>
         )}
       </div>
@@ -181,37 +241,41 @@ function StackCard({
   });
   const canReplace =
     selectedSource?.rangeId === range && selectedSource.vocationId !== vocation;
+  const isSelected =
+    selectedSource?.rangeId === range && selectedSource.vocationId === vocation;
+  const pressedRef = useSelectionPressedRef(isSelected, handleRef);
 
   return (
     <article
       ref={targetRef}
-      className={`path-card path-stack ${isDropTarget ? (draggedStack && draggedStack.rangeId === range && draggedStack.vocationId !== vocation ? "path-target" : "path-rejected") : ""}`}
+      className={`path-card path-stack ${isSelected ? "path-selected-stack" : ""} ${isDropTarget ? (draggedStack && draggedStack.rangeId === range && draggedStack.vocationId !== vocation ? "path-target" : "path-rejected") : ""}`}
       data-testid={`stack-${range}-${vocation}`}
     >
       <div ref={sourceRef}>
         <strong>{vocation}</strong>{" "}
-        <span data-testid={`count-${range}-${vocation}`}>{count} 件</span>
+        <span data-testid={`count-${range}-${vocation}`}>{count}Lv</span>
         <div className="path-actions">
           <button
-            ref={handleRef}
+            ref={pressedRef}
             type="button"
             className="path-handle"
-            aria-label={`${range} の ${vocation} 1 件をドラッグまたは選択`}
+            aria-label={`${range} の ${vocation} ${isSelected ? "選択中" : "入替対象に指定"}`}
+            aria-pressed={isSelected}
             onClick={() =>
               onSelectSource({ rangeId: range, vocationId: vocation })
             }
           >
-            1 件を選択
+            {isSelected ? "選択中" : "入替対象に指定"}
           </button>
           <button type="button" onClick={() => onRemove(vocation)}>
-            1 件削除
+            1Lv削除
           </button>
           <button
             type="button"
             disabled={!canReplace}
             onClick={() => onReplace(vocation)}
           >
-            ここへ変更
+            1Lv入替
           </button>
         </div>
       </div>
@@ -222,7 +286,7 @@ function StackCard({
 function RangeArea({
   range,
   path,
-  selected,
+  selectedAddition,
   draggedSelection,
   draggedStack,
   selectedSource,
@@ -233,7 +297,7 @@ function RangeArea({
 }: {
   range: LevelRangeId;
   path: VocationPath;
-  selected: Selection | null;
+  selectedAddition: Selection | null;
   draggedSelection: Selection | null;
   draggedStack: StackSelection | null;
   selectedSource: StackSelection | null;
@@ -256,8 +320,8 @@ function RangeArea({
   const counts = countVocations(steps);
   const canAdd =
     !full &&
-    selected !== null &&
-    isVocationAvailable(range, selected.vocationId);
+    selectedAddition !== null &&
+    isVocationAvailable(range, selectedAddition.vocationId);
 
   return (
     <section
@@ -323,20 +387,56 @@ export function PathEditor({
   onReplace,
   onRemove,
 }: PathEditorProps) {
-  const [selected, setSelected] = useState<Selection | null>(null);
+  const [selection, setSelection] = useState<EditorSelection>(null);
+  const [lastPath, setLastPath] = useState(path);
   const [draggedSelection, setDraggedSelection] = useState<Selection | null>(
     null,
   );
   const [draggedStack, setDraggedStack] = useState<StackSelection | null>(null);
-  const [selectedSource, setSelectedSource] = useState<StackSelection | null>(
-    null,
-  );
+  const selectedAddition = selection?.kind === "add" ? selection : null;
+  const selectedSource =
+    selection?.kind === "replace" &&
+    path[selection.rangeId].includes(selection.vocationId)
+      ? selection
+      : null;
+
+  if (path !== lastPath) {
+    setLastPath(path);
+    if (selection?.kind === "replace" && !selectedSource) setSelection(null);
+  }
+
+  function toggleAddition({ vocationId, count }: Selection) {
+    setSelection((current) =>
+      current?.kind === "add" &&
+      current.vocationId === vocationId &&
+      current.count === count
+        ? null
+        : { kind: "add", vocationId, count },
+    );
+  }
+
+  function toggleReplacement({ rangeId, vocationId }: StackSelection) {
+    setSelection((current) =>
+      current?.kind === "replace" &&
+      current.rangeId === rangeId &&
+      current.vocationId === vocationId
+        ? null
+        : { kind: "replace", rangeId, vocationId },
+    );
+  }
+
+  function replaceSelected(range: LevelRangeId, target: VocationId) {
+    if (!selectedSource || selectedSource.rangeId !== range) return;
+    if (selectedSource.vocationId === target) return;
+    if (!isVocationAvailable(range, target)) return;
+    onReplace(range, selectedSource.vocationId, target);
+  }
 
   return (
     <div className="path-page">
       <p id="path-instructions">
         各 ×
-        ボタンをドラッグし、育成経路のレベル帯にドロップします。配置済みの職業は別の職業へドラッグして変更します。キーボードでは
+        ボタンをドラッグし、育成経路のレベル帯にドロップします。配置済みの職業は別の職業へドラッグして1Lv入れ替えます。キーボードでは
         Space で持ち上げ、矢印キーで移動し、Space で確定、Escape
         で中止します。ボタンをクリックして選び、追加・変更することもできます。
       </p>
@@ -401,11 +501,23 @@ export function PathEditor({
           } else if (
             source?.kind === "stack" &&
             target?.kind === "stack" &&
-            source.rangeId === target.rangeId
+            source.rangeId === target.rangeId &&
+            source.vocationId !== target.vocationId
           ) {
             onReplace(source.rangeId, source.vocationId, target.vocationId);
-          } else if (source?.kind === "stack" && target?.kind === "vocation") {
+            setSelection((current) =>
+              current?.kind === "replace" ? null : current,
+            );
+          } else if (
+            source?.kind === "stack" &&
+            target?.kind === "vocation" &&
+            source.vocationId !== target.vocationId &&
+            isVocationAvailable(source.rangeId, target.vocationId)
+          ) {
             onReplace(source.rangeId, source.vocationId, target.vocationId);
+            setSelection((current) =>
+              current?.kind === "replace" ? null : current,
+            );
           }
         }}
       >
@@ -421,24 +533,17 @@ export function PathEditor({
               renderVocation={(vocationId) => (
                 <PaletteCard
                   vocationId={vocationId}
-                  onSelect={setSelected}
+                  onSelect={toggleAddition}
+                  selectedAddition={selectedAddition}
                   selectedSource={selectedSource}
                   draggedStack={draggedStack}
                   onReplace={() => {
                     if (selectedSource)
-                      onReplace(
-                        selectedSource.rangeId,
-                        selectedSource.vocationId,
-                        vocationId,
-                      );
+                      replaceSelected(selectedSource.rangeId, vocationId);
                   }}
                 />
               )}
             />
-            <p className="path-selection">
-              選択中:{" "}
-              {selected ? `${selected.vocationId} ×${selected.count}` : "なし"}
-            </p>
           </div>
           <section aria-label="育成経路" className="path-board">
             <h2>育成経路</h2>
@@ -448,20 +553,29 @@ export function PathEditor({
                   key={id}
                   range={id}
                   path={path}
-                  selected={selected}
+                  selectedAddition={selectedAddition}
                   draggedSelection={draggedSelection}
                   draggedStack={draggedStack}
                   selectedSource={selectedSource}
                   onAdd={(range) => {
-                    if (selected)
-                      onAdd(range, selected.vocationId, selected.count);
+                    if (selectedAddition)
+                      onAdd(
+                        range,
+                        selectedAddition.vocationId,
+                        selectedAddition.count,
+                      );
                   }}
-                  onSelectSource={setSelectedSource}
-                  onReplace={(range, target) => {
-                    if (selectedSource)
-                      onReplace(range, selectedSource.vocationId, target);
+                  onSelectSource={toggleReplacement}
+                  onReplace={replaceSelected}
+                  onRemove={(range, vocation) => {
+                    if (
+                      selectedSource?.rangeId === range &&
+                      selectedSource.vocationId === vocation &&
+                      countVocations(path[range]).get(vocation) === 1
+                    )
+                      setSelection(null);
+                    onRemove(range, vocation);
                   }}
-                  onRemove={onRemove}
                 />
               ),
             )}

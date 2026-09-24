@@ -11,7 +11,7 @@ test("育成経路の作成から共有・復元・比較まで一連の操作�
   await page
     .getByTestId("palette-fighter")
     .getByRole("button", {
-      name: "fighter 1 件をドラッグまたは選択",
+      name: "fighter 1Lvをドラッグまたは選択",
       exact: true,
     })
     .click();
@@ -19,7 +19,7 @@ test("育成経路の作成から共有・復元・比較まで一連の操作�
   await page.getByRole("button", { name: "Lv2～10 (0/9)" }).click();
   await page
     .getByTestId("palette-mage")
-    .getByRole("button", { name: "mage 10 件をドラッグまたは選択" })
+    .getByRole("button", { name: "mage 10Lvをドラッグまたは選択" })
     .click();
   await page.getByRole("button", { name: "選択を追加" }).click();
   await expect(page.getByText("Lv 10")).toBeVisible();
@@ -38,7 +38,7 @@ test("育成経路の作成から共有・復元・比較まで一連の操作�
     page.getByRole("radio", { name: "LL", exact: true }),
   ).toBeChecked();
   await page.getByRole("button", { name: "Lv2～10 (9/9)" }).click();
-  await expect(page.getByTestId("count-forLv10-mage")).toHaveText("9 件");
+  await expect(page.getByTestId("count-forLv10-mage")).toHaveText("9Lv");
 
   await page.getByRole("link", { name: "免責事項" }).click();
   await expect(page.getByRole("heading", { name: "免責事項" })).toBeVisible();
