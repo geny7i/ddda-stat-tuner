@@ -7,11 +7,69 @@
 }
 
 :root:has(.editor-page) {
-  scroll-padding-top: 13rem;
+  scroll-padding-top: min(13rem, 35dvh);
 }
 
 .editor-page h1 {
   margin-bottom: 0.25rem;
+}
+
+.editor-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  margin: 1rem 0;
+}
+
+.editor-title-row h1 {
+  margin: 0;
+}
+
+.editor-help-button,
+.editor-help-dialog button {
+  border: 1px solid #164f85;
+  border-radius: 0.35rem;
+  background: #fff;
+  color: #164f85;
+  padding: 0.4rem 0.7rem;
+  font: inherit;
+  cursor: pointer;
+}
+
+.editor-help-button:focus-visible,
+.editor-help-dialog button:focus-visible,
+.editor-help-dialog h2:focus-visible {
+  outline: 3px solid #ff9d00;
+  outline-offset: 2px;
+}
+
+.editor-help-dialog {
+  box-sizing: border-box;
+  width: min(36rem, calc(100vw - 2rem));
+  max-height: calc(100dvh - 2rem);
+  border: 1px solid #60758a;
+  border-radius: 0.5rem;
+  background: #fff;
+  color: #18212b;
+  padding: 0;
+  overflow-y: auto;
+}
+
+.editor-help-dialog::backdrop {
+  background: #18212b99;
+}
+
+.editor-help-content {
+  padding: 1.25rem;
+}
+
+.editor-help-content h2 {
+  margin: 0;
+}
+
+.editor-help-content p {
+  margin: 1rem 0;
 }
 
 .editor-sticky-bar {

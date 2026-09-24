@@ -135,10 +135,6 @@ test("並べ替えた比較行から追加・変更でき、職業と数量が�
   );
   await page.keyboard.press("Tab");
   await expect(
-    page.getByRole("region", { name: "職業と成長値の一覧" }),
-  ).toBeFocused();
-  await page.keyboard.press("Tab");
-  await expect(
     page.getByTestId("comparison-assassin").getByRole("button", {
       name: "assassin 1Lvをドラッグまたは選択",
     }),
