@@ -6,14 +6,33 @@
   padding-bottom: 2rem;
 }
 
+:root:has(.editor-page) {
+  scroll-padding-top: 13rem;
+}
+
 .editor-page h1 {
   margin-bottom: 0.25rem;
+}
+
+.editor-sticky-bar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+  margin: 0.75rem 0 1rem;
+  border: 1px solid #a9b8c5;
+  border-radius: 0.5rem;
+  background: #f8fafc;
+  padding: 0.5rem;
+  box-shadow: 0 2px 6px #18212b1a;
 }
 
 .editor-controls {
   display: grid;
   gap: 1rem;
-  margin: 1.25rem 0;
+  margin: 1rem 0;
 }
 
 .adjustment-panel {
@@ -127,6 +146,51 @@
 .status-heading h2,
 .comparison-panel h2 {
   margin: 0 0 0.75rem;
+}
+
+.editor-sticky-bar .status-panel {
+  margin: 0;
+  border: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.editor-sticky-bar .status-heading h2,
+.editor-ranges h2 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.editor-sticky-bar .status-heading {
+  line-height: 1.25;
+}
+
+.editor-sticky-bar .status-values {
+  gap: 0.25rem;
+  margin-top: 0.3rem;
+}
+
+.editor-sticky-bar .status-values div {
+  padding: 0.15rem 0.25rem;
+}
+
+.editor-sticky-bar .status-values dt {
+  font-size: 0.75rem;
+  line-height: 1.2;
+}
+
+.editor-sticky-bar .status-values dd {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.3;
+}
+
+.editor-ranges {
+  min-width: 0;
+}
+
+.editor-ranges h2 {
+  margin-bottom: 0.25rem;
 }
 
 .status-heading span {
@@ -317,19 +381,25 @@
 
 .editor-range-list {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 0.35rem;
+  min-width: 0;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  padding: 0.15rem 0.2rem 0.3rem;
 }
 
 .editor-range-list button {
+  position: relative;
   border: 1px solid #60758a;
   border-radius: 0.35rem;
   background: #fff;
-  padding: 0.4rem 0.7rem;
+  padding: 0.2rem 0.4rem;
   cursor: pointer;
   display: grid;
-  gap: 0.25rem;
-  min-width: 7.5rem;
+  gap: 0.1rem;
+  flex: 1 0 0;
+  min-width: 8.5rem;
+  max-width: 100%;
   text-align: left;
 }
 
@@ -339,9 +409,11 @@
 
 .editor-range-breakdown {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
-  gap: 0.25rem 0.5rem;
+  gap: 0.35rem;
+  min-width: 0;
+  overflow-x: auto;
 }
 
 .editor-range-count {
@@ -410,18 +482,29 @@
   display: grid;
   grid-template-columns: minmax(0, 1.15fr) minmax(17rem, 1fr);
   gap: 1rem;
-  align-items: start;
+  height: max(22rem, calc(100dvh - 13rem));
   min-width: 0;
 }
 
 .path-palette {
   min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  scroll-padding-block: 1rem;
+}
+
+.path-palette:focus-visible,
+.path-stacks:focus-visible {
+  outline: 3px solid #ff9d00;
+  outline-offset: -3px;
 }
 
 .path-board {
   display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
   gap: 0.65rem;
   min-width: 0;
+  min-height: 0;
 }
 
 .path-palette .comparison-panel {
@@ -468,6 +551,9 @@
 
 .path-range {
   min-height: 5rem;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .path-range h3 {
@@ -481,6 +567,9 @@
 .path-stacks {
   min-height: 2rem;
   margin-top: 0.5rem;
+  overflow-y: auto;
+  align-content: flex-start;
+  scroll-padding-block: 1rem;
 }
 
 .path-stacks p {
@@ -516,10 +605,21 @@
 @media (max-width: 760px) {
   .path-layout {
     grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(12rem, 1fr) minmax(13rem, 1fr);
+    height: max(29rem, calc(100dvh - 13rem));
+    gap: 0.65rem;
+  }
+
+  .editor-range-list button {
+    flex: 0 0 11rem;
   }
 
   .status-values {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .editor-sticky-bar .status-values dt {
+    font-size: 0.7rem;
   }
 
   .score-chart li {

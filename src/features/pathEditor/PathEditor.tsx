@@ -277,7 +277,12 @@ function RangeArea({
           選択を追加
         </button>
       </div>
-      <div className="path-stacks">
+      <div
+        className="path-stacks"
+        role="region"
+        aria-label="配置済み職業の一覧"
+        tabIndex={0}
+      >
         {[...counts].map(([vocation, count]) => (
           <StackCard
             key={vocation}
@@ -405,7 +410,12 @@ export function PathEditor({
         }}
       >
         <div className="path-layout">
-          <div className="path-palette">
+          <div
+            className="path-palette"
+            role="region"
+            aria-label="職業と成長値の一覧"
+            tabIndex={0}
+          >
             <VocationComparison
               rows={comparisonRows}
               renderVocation={(vocationId) => (

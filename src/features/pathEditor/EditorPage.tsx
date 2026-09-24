@@ -56,7 +56,14 @@ export function EditorPage() {
       <h1>育成計画</h1>
       <p>レベル帯を選び、職業を追加・変更・削除して育成経路を組み立てます。</p>
 
-      <StatusSummary status={currentStatus} level={currentLevel} />
+      <div className="editor-sticky-bar">
+        <StatusSummary status={currentStatus} level={currentLevel} />
+        <LevelRangeSelector
+          activeRange={activeRange}
+          path={path}
+          onSelect={(id) => dispatch(setActiveRange(id))}
+        />
+      </div>
       <ShareButton character={character} />
 
       <div className="editor-controls">
@@ -79,12 +86,6 @@ export function EditorPage() {
             </label>
           ))}
         </fieldset>
-
-        <LevelRangeSelector
-          activeRange={activeRange}
-          path={path}
-          onSelect={(id) => dispatch(setActiveRange(id))}
-        />
       </div>
 
       <h2 className="editor-current-range">

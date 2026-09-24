@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import {
   countVocations,
   LEVEL_RANGES,
@@ -21,10 +22,24 @@ export function LevelRangeSelector({
   path: VocationPath;
   onSelect: (id: LevelRangeId) => void;
 }) {
+  const listRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const list = listRef.current;
+    const selected = list?.querySelector<HTMLButtonElement>(
+      'button[aria-pressed="true"]',
+    );
+    if (!list || !selected) return;
+    const left = selected.offsetLeft - list.offsetLeft;
+    if (left < list.scrollLeft) list.scrollLeft = left;
+    if (left + selected.offsetWidth > list.scrollLeft + list.clientWidth)
+      list.scrollLeft = left + selected.offsetWidth - list.clientWidth;
+  }, [activeRange]);
+
   return (
-    <section aria-labelledby="level-range-title">
+    <section className="editor-ranges" aria-labelledby="level-range-title">
       <h2 id="level-range-title">レベル帯</h2>
-      <div className="editor-range-list">
+      <div className="editor-range-list" ref={listRef}>
         {LEVEL_RANGES.map(({ id, from, to }) => {
           const counts = countVocations(path[id]);
           const label = `Lv${from}～${to} (${path[id].length}/${to - from + 1})`;
