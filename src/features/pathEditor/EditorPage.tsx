@@ -18,6 +18,7 @@ import { PathEditor } from "./PathEditor";
 import { AdjustmentControls } from "./AdjustmentControls";
 import { FocusOptions } from "./FocusOptions";
 import { StatusSummary } from "./StatusSummary";
+import { EditorHelp } from "./EditorHelp";
 import { ShareButton } from "../sharing/ShareButton";
 import { LevelRangeSelector, rangeLabel } from "./LevelRangeSelector";
 import {
@@ -53,8 +54,10 @@ export function EditorPage() {
 
   return (
     <div className="editor-page">
-      <h1>育成計画</h1>
-      <p>レベル帯を選び、職業を追加・変更・削除して育成経路を組み立てます。</p>
+      <div className="editor-title-row">
+        <h1>育成計画</h1>
+        <EditorHelp />
+      </div>
 
       <div className="editor-sticky-bar">
         <StatusSummary status={currentStatus} level={currentLevel} />
@@ -91,15 +94,17 @@ export function EditorPage() {
       <h2 className="editor-current-range">
         編集中: {rangeLabel(activeRange)}
       </h2>
-      <FocusOptions
-        focusedStats={focusedStats}
-        onToggleFocus={(statId) => dispatch(toggleFocusedStat(statId))}
-      />
       <PathEditor
         key={activeRange}
         path={path}
         visibleRanges={[activeRange]}
         comparisonRows={comparisonRows}
+        focusOptions={
+          <FocusOptions
+            focusedStats={focusedStats}
+            onToggleFocus={(statId) => dispatch(toggleFocusedStat(statId))}
+          />
+        }
         onAdd={(range, vocation, count) =>
           dispatch(addSteps({ range, vocation, count }))
         }

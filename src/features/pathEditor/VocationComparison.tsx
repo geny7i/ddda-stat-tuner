@@ -10,10 +10,12 @@ export function VocationComparison({
   rows,
   showChart = false,
   renderVocation,
+  focusOptions,
 }: {
   rows: readonly StatusGrowthWithScore[];
   showChart?: boolean;
   renderVocation?: (vocationId: VocationId) => ReactNode;
+  focusOptions?: ReactNode;
 }) {
   const maxScore = Math.max(1, ...rows.map(({ score }) => score));
 
@@ -25,6 +27,7 @@ export function VocationComparison({
       <h2 id="vocation-comparison-title">
         {renderVocation ? "職業と成長値" : "職業ごとの成長値"}
       </h2>
+      {renderVocation && focusOptions}
       {showChart && (
         <ul className="score-chart" aria-label="職業スコアの比較">
           {rows.map(({ vocationId, score }) => (

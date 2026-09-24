@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import type { ReactNode } from "react";
 import {
   DragDropProvider,
   DragOverlay,
@@ -370,6 +371,7 @@ type PathEditorProps = {
   path: VocationPath;
   visibleRanges: readonly LevelRangeId[];
   comparisonRows: readonly StatusGrowthWithScore[];
+  focusOptions: ReactNode;
   onAdd: (range: LevelRangeId, vocation: VocationId, count: number) => void;
   onReplace: (
     range: LevelRangeId,
@@ -383,6 +385,7 @@ export function PathEditor({
   path,
   visibleRanges,
   comparisonRows,
+  focusOptions,
   onAdd,
   onReplace,
   onRemove,
@@ -434,12 +437,6 @@ export function PathEditor({
 
   return (
     <div className="path-page">
-      <p id="path-instructions">
-        各 ×
-        ボタンをドラッグし、育成経路のレベル帯にドロップします。配置済みの職業は別の職業へドラッグして1Lv入れ替えます。キーボードでは
-        Space で持ち上げ、矢印キーで移動し、Space で確定、Escape
-        で中止します。ボタンをクリックして選び、追加・変更することもできます。
-      </p>
       <DragDropProvider
         onDragStart={({ operation }) => {
           const parsed = operation.source && parseSource(operation.source.id);
@@ -530,6 +527,7 @@ export function PathEditor({
           >
             <VocationComparison
               rows={comparisonRows}
+              focusOptions={focusOptions}
               renderVocation={(vocationId) => (
                 <PaletteCard
                   vocationId={vocationId}
