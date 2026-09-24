@@ -66,7 +66,7 @@ test("倍数調整は200Lv入力済みの場合だけ実行できる", async () 
       onRound={onRound}
     />,
   );
-  expect(screen.getByText("変更対象: 最大10Lv")).toBeVisible();
+  expect(screen.getByText("変更対象: 最大26Lv")).toBeVisible();
   expect(screen.getByRole("button", { name: "自動調整を実行" })).toBeEnabled();
 });
 
@@ -105,15 +105,11 @@ test("倍数調整の結果を通知し、変更前後の値を示す", async ()
   ).toBeVisible();
 });
 
-test("未発見と古い探索結果を別の通知で示す", async () => {
+test("探索エラーと古い探索結果を別の通知で示す", async () => {
   const user = userEvent.setup();
   const onRound = vi
     .fn()
-    .mockResolvedValueOnce({
-      kind: "not-found",
-      expandedCount: 10,
-      truncated: true,
-    })
+    .mockRejectedValueOnce(new Error("worker failed"))
     .mockResolvedValueOnce({ kind: "stale" });
   render(
     <AdjustmentControls
@@ -126,7 +122,7 @@ test("未発見と古い探索結果を別の通知で示す", async () => {
   const button = screen.getByRole("button", { name: "自動調整を実行" });
   await user.click(button);
   expect(await screen.findByRole("status")).toHaveTextContent(
-    "探索範囲では条件を満たす経路が見つかりませんでした",
+    "探索を実行できませんでした",
   );
   await user.click(button);
   expect(await screen.findByRole("status")).toHaveTextContent(
