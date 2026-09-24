@@ -17,7 +17,7 @@ test("レベル帯を切り替えても経路と体格を保ち、ボタンで�
   await user.click(screen.getByRole("button", { name: "Lv2～10 (0/9)" }));
   await user.click(
     within(screen.getByTestId("palette-fighter")).getByRole("button", {
-      name: "fighter 10 件をドラッグまたは選択",
+      name: "fighter 10Lvをドラッグまたは選択",
     }),
   );
   await user.click(screen.getByRole("button", { name: "選択を追加" }));
@@ -25,25 +25,25 @@ test("レベル帯を切り替えても経路と体格を保ち、ボタンで�
 
   await user.click(screen.getByRole("button", { name: "Lv11～100 (0/90)" }));
   await user.click(screen.getByRole("button", { name: "Lv2～10 (9/9)" }));
-  expect(screen.getByTestId("count-forLv10-fighter")).toHaveTextContent("9 件");
+  expect(screen.getByTestId("count-forLv10-fighter")).toHaveTextContent("9Lv");
 
   await user.click(screen.getByRole("radio", { name: "L" }));
   expect(store.getState().editor.weightClass).toBe("l");
 
   await user.click(
     screen.getByRole("button", {
-      name: "forLv10 の fighter 1 件をドラッグまたは選択",
+      name: "forLv10 の fighter 入替対象に指定",
     }),
   );
   await user.click(
     within(screen.getByTestId("palette-mage")).getByRole("button", {
-      name: "この職業へ変更",
+      name: "1Lv入替",
     }),
   );
-  expect(screen.getByTestId("count-forLv10-mage")).toHaveTextContent("1 件");
+  expect(screen.getByTestId("count-forLv10-mage")).toHaveTextContent("1Lv");
   await user.click(
     within(screen.getByTestId("stack-forLv10-mage")).getByRole("button", {
-      name: "1 件削除",
+      name: "1Lv削除",
     }),
   );
   expect(store.getState().editor.path.forLv10).toHaveLength(8);

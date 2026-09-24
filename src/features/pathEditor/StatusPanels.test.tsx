@@ -22,7 +22,7 @@ test("育成経路と体格の変更を現在のステータスへ反映する",
   expect(screen.getByTestId("current-st")).toHaveTextContent("40");
   await user.click(
     within(screen.getByTestId("palette-fighter")).getByRole("button", {
-      name: "fighter 1 件をドラッグまたは選択",
+      name: "fighter 1Lvをドラッグまたは選択",
     }),
   );
   await user.click(screen.getByRole("button", { name: "選択を追加" }));

@@ -9,7 +9,7 @@ test("経路・体格・注目項目の変更をステータスと比較表へ�
   await page
     .getByTestId("palette-fighter")
     .getByRole("button", {
-      name: "fighter 1 件をドラッグまたは選択",
+      name: "fighter 1Lvをドラッグまたは選択",
       exact: true,
     })
     .click();

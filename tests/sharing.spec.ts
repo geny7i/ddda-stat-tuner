@@ -10,7 +10,7 @@ test("共有 URL をコピーし、同じ経路と体格を復元できる", asy
   await page
     .getByTestId("palette-fighter")
     .getByRole("button", {
-      name: "fighter 1 件をドラッグまたは選択",
+      name: "fighter 1Lvをドラッグまたは選択",
       exact: true,
     })
     .click();
@@ -18,7 +18,7 @@ test("共有 URL をコピーし、同じ経路と体格を復元できる", asy
   await page.getByRole("button", { name: "Lv2～10 (0/9)" }).click();
   await page
     .getByTestId("palette-mage")
-    .getByRole("button", { name: "mage 10 件をドラッグまたは選択" })
+    .getByRole("button", { name: "mage 10Lvをドラッグまたは選択" })
     .click();
   await page.getByRole("button", { name: "選択を追加" }).click();
 
@@ -36,7 +36,7 @@ test("共有 URL をコピーし、同じ経路と体格を復元できる", asy
     page.getByRole("radio", { name: "LL", exact: true }),
   ).toBeChecked();
   await page.getByRole("button", { name: "Lv2～10 (9/9)" }).click();
-  await expect(page.getByTestId("count-forLv10-mage")).toHaveText("9 件");
+  await expect(page.getByTestId("count-forLv10-mage")).toHaveText("9Lv");
 
   await page.goto(shareUrl);
   await expect(page.getByText("Lv 10")).toBeVisible();

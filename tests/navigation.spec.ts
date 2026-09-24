@@ -22,7 +22,7 @@ test("画面を往復しても育成経路・レベル帯・注目項目を保�
   await page
     .getByTestId("palette-fighter")
     .getByRole("button", {
-      name: "fighter 1 件をドラッグまたは選択",
+      name: "fighter 1Lvをドラッグまたは選択",
       exact: true,
     })
     .click();
@@ -48,7 +48,7 @@ test("画面を往復しても育成経路・レベル帯・注目項目を保�
   await page.getByRole("link", { name: "育成計画" }).click();
   await expect(page.getByText("編集中: Lv11～100")).toBeVisible();
   await page.getByRole("button", { name: "Lv1～1 (1/1)" }).click();
-  await expect(page.getByTestId("count-onlyLv1-fighter")).toHaveText("1 件");
+  await expect(page.getByTestId("count-onlyLv1-fighter")).toHaveText("1Lv");
   await expect(page.getByRole("checkbox", { name: "HP" })).not.toBeChecked();
 });
 
