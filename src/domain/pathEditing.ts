@@ -41,6 +41,19 @@ export function removeFromPath(
   return { ...path, [rangeId]: steps };
 }
 
+export function removeAllFromPath(
+  path: VocationPath,
+  rangeId: LevelRangeId,
+  vocationId: VocationId,
+): VocationPath {
+  const steps = path[rangeId];
+  if (!steps.includes(vocationId)) return path;
+  return {
+    ...path,
+    [rangeId]: steps.filter((step) => step !== vocationId),
+  };
+}
+
 export function replaceInPath(
   path: VocationPath,
   rangeId: LevelRangeId,

@@ -8,6 +8,7 @@ import { useAppDispatch, useAppSelector, useAppStore } from "../../app/hooks";
 import {
   addSteps,
   applyAdjustment,
+  removeAllSteps,
   removeStep,
   replaceStep,
   setActiveRange,
@@ -113,6 +114,9 @@ export function EditorPage() {
         }
         onRemove={(range, vocation) =>
           dispatch(removeStep({ range, vocation }))
+        }
+        onRemoveAll={(range, vocation) =>
+          dispatch(removeAllSteps({ range, vocation }))
         }
       />
     </div>

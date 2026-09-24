@@ -1,5 +1,10 @@
 import { expect, test } from "vitest";
-import { addToPath, removeFromPath, replaceInPath } from "./pathEditing";
+import {
+  addToPath,
+  removeAllFromPath,
+  removeFromPath,
+  replaceInPath,
+} from "./pathEditing";
 import { LEVEL_RANGES } from "./levelRanges";
 import { VOCATION_IDS } from "./vocations";
 import type { VocationPath } from "./character";
@@ -33,4 +38,17 @@ test("選択できない職業、存在しない職業の変更・削除を拒�
     replaceInPath(path, "forLv10", VOCATION_IDS.fighter, VOCATION_IDS.mage)
       .forLv10,
   ).toEqual(["mage", "fighter"]);
+});
+
+test("指定したレベル帯の職業だけを全Lv削除し、他の職業と帯を残す", () => {
+  const path: VocationPath = {
+    onlyLv1: ["fighter"],
+    forLv10: ["fighter", "mage", "fighter"],
+    forLv100: ["fighter", "fighter"],
+    forLv200: [],
+  };
+  const updated = removeAllFromPath(path, "forLv10", "fighter");
+  expect(updated).toEqual({ ...path, forLv10: ["mage"] });
+  expect(path.forLv10).toEqual(["fighter", "mage", "fighter"]);
+  expect(removeAllFromPath(updated, "forLv10", "fighter")).toBe(updated);
 });

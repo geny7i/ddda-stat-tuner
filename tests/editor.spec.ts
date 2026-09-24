@@ -329,6 +329,70 @@ test("入替元の移動、削除後の解除、レベル帯切替を反映す�
   ).toHaveAttribute("aria-pressed", "false");
 });
 
+test("職業カードの×で該当レベル帯の全Lvを削除する", async ({ page }) => {
+  await page.goto("/#/");
+  await page.getByRole("button", { name: "Lv2～10 (0/9)" }).click();
+  await page
+    .getByTestId("palette-fighter")
+    .getByRole("button", { name: "fighter 1Lvをドラッグまたは選択" })
+    .click();
+  await page
+    .getByTestId("range-forLv10")
+    .getByRole("button", { name: "選択を追加" })
+    .click();
+
+  await page.getByRole("button", { name: "Lv11～100 (0/90)" }).click();
+  await page
+    .getByTestId("palette-fighter")
+    .getByRole("button", { name: "fighter 10Lvをドラッグまたは選択" })
+    .click();
+  await page
+    .getByTestId("range-forLv100")
+    .getByRole("button", { name: "選択を追加" })
+    .click();
+  await page
+    .getByTestId("palette-mage")
+    .getByRole("button", { name: "mage 1Lvをドラッグまたは選択" })
+    .click();
+  await page
+    .getByTestId("range-forLv100")
+    .getByRole("button", { name: "選択を追加" })
+    .click();
+
+  await expect(page.locator(".status-heading")).toContainText("Lv 12");
+  const hpBefore = Number(await page.getByTestId("current-hp").textContent());
+
+  const fighterStack = page.getByTestId("stack-forLv100-fighter");
+  await fighterStack
+    .getByRole("button", { name: "forLv100 の fighter 入替対象に指定" })
+    .click();
+  await expect(fighterStack).toHaveClass(/path-selected-stack/);
+  await fighterStack
+    .getByRole("button", { name: "forLv100 の fighter 10Lvをすべて削除" })
+    .click();
+
+  await expect(fighterStack).toHaveCount(0);
+  await expect(page.getByTestId("count-forLv100-mage")).toHaveText("1Lv");
+  await expect(page.getByTestId("capacity-forLv100")).toHaveText("1/90");
+  await expect(page.locator("#range-breakdown-forLv100")).toHaveText(
+    "mage 1Lv",
+  );
+  await expect(page.locator(".status-heading")).toContainText("Lv 2");
+  expect(
+    Number(await page.getByTestId("current-hp").textContent()),
+  ).toBeLessThan(hpBefore);
+  await expect(
+    page.getByRole("button", { name: "Lv2～10 (1/9)" }),
+  ).toBeVisible();
+  await expect(
+    page
+      .getByTestId("palette-warrior")
+      .getByRole("button", { name: "1Lv入替" }),
+  ).toHaveCount(0);
+  await page.getByRole("button", { name: "Lv2～10 (1/9)" }).click();
+  await expect(page.getByTestId("count-forLv10-fighter")).toHaveText("1Lv");
+});
+
 test("ドラッグ中の1Lv・10Lv・100Lv表示は改行せず、追加元の選択を変えない", async ({
   page,
 }) => {
