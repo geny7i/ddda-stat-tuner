@@ -647,6 +647,21 @@
   min-width: 12rem;
 }
 
+.path-stack-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.path-page .path-remove-all {
+  margin-left: auto;
+  padding: 0.15rem 0.45rem;
+  border-color: #9b4b4b;
+  color: #802d2d;
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
 .path-target {
   border-color: #086b43;
   background: #e1f6e9;

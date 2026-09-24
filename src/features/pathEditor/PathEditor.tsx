@@ -218,6 +218,7 @@ function StackCard({
   onSelectSource,
   onReplace,
   onRemove,
+  onRemoveAll,
 }: {
   range: LevelRangeId;
   vocation: VocationId;
@@ -227,6 +228,7 @@ function StackCard({
   onSelectSource: (source: StackSelection) => void;
   onReplace: (target: VocationId) => void;
   onRemove: (vocation: VocationId) => void;
+  onRemoveAll: (vocation: VocationId) => void;
 }) {
   const { ref: targetRef, isDropTarget } = useDroppable({
     id: stackId(range, vocation),
@@ -253,8 +255,18 @@ function StackCard({
       data-testid={`stack-${range}-${vocation}`}
     >
       <div ref={sourceRef}>
-        <strong>{vocation}</strong>{" "}
-        <span data-testid={`count-${range}-${vocation}`}>{count}Lv</span>
+        <div className="path-stack-heading">
+          <strong>{vocation}</strong>
+          <span data-testid={`count-${range}-${vocation}`}>{count}Lv</span>
+          <button
+            type="button"
+            className="path-remove-all"
+            aria-label={`${range} の ${vocation} ${count}Lvをすべて削除`}
+            onClick={() => onRemoveAll(vocation)}
+          >
+            ×
+          </button>
+        </div>
         <div className="path-actions">
           <button
             ref={pressedRef}
@@ -295,6 +307,7 @@ function RangeArea({
   onSelectSource,
   onReplace,
   onRemove,
+  onRemoveAll,
 }: {
   range: LevelRangeId;
   path: VocationPath;
@@ -306,6 +319,7 @@ function RangeArea({
   onSelectSource: (source: StackSelection) => void;
   onReplace: (range: LevelRangeId, target: VocationId) => void;
   onRemove: (range: LevelRangeId, vocation: VocationId) => void;
+  onRemoveAll: (range: LevelRangeId, vocation: VocationId) => void;
 }) {
   const definition = getLevelRangeById(range);
   const steps = path[range];
@@ -359,6 +373,7 @@ function RangeArea({
             onSelectSource={onSelectSource}
             onReplace={(target) => onReplace(range, target)}
             onRemove={(target) => onRemove(range, target)}
+            onRemoveAll={(target) => onRemoveAll(range, target)}
           />
         ))}
         {counts.size === 0 && <p>ここへ職業をドロップできます。</p>}
@@ -379,6 +394,7 @@ type PathEditorProps = {
     target: VocationId,
   ) => void;
   onRemove: (range: LevelRangeId, vocation: VocationId) => void;
+  onRemoveAll: (range: LevelRangeId, vocation: VocationId) => void;
 };
 
 export function PathEditor({
@@ -389,6 +405,7 @@ export function PathEditor({
   onAdd,
   onReplace,
   onRemove,
+  onRemoveAll,
 }: PathEditorProps) {
   const [selection, setSelection] = useState<EditorSelection>(null);
   const [lastPath, setLastPath] = useState(path);
@@ -573,6 +590,14 @@ export function PathEditor({
                     )
                       setSelection(null);
                     onRemove(range, vocation);
+                  }}
+                  onRemoveAll={(range, vocation) => {
+                    if (
+                      selectedSource?.rangeId === range &&
+                      selectedSource.vocationId === vocation
+                    )
+                      setSelection(null);
+                    onRemoveAll(range, vocation);
                   }}
                 />
               ),

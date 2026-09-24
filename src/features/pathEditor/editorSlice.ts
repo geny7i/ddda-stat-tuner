@@ -4,6 +4,7 @@ import {
   adjustPath,
   type CharacterInfo,
   LEVEL_RANGES,
+  removeAllFromPath,
   removeFromPath,
   replaceInPath,
   type LevelRangeId,
@@ -84,6 +85,14 @@ const editorSlice = createSlice({
       const next = removeFromPath(state.path, range, vocation);
       if (next !== state.path) state.path[range] = [...next[range]];
     },
+    removeAllSteps(
+      state,
+      action: PayloadAction<{ range: LevelRangeId; vocation: VocationId }>,
+    ) {
+      const { range, vocation } = action.payload;
+      const next = removeAllFromPath(state.path, range, vocation);
+      if (next !== state.path) state.path[range] = [...next[range]];
+    },
     applyAdjustment(state, action: PayloadAction<PathAdjustmentRequest>) {
       const result = adjustPath(state.path, action.payload);
       if (result.changedCount === 0) return;
@@ -100,6 +109,7 @@ export const {
   addSteps,
   replaceStep,
   removeStep,
+  removeAllSteps,
   applyAdjustment,
 } = editorSlice.actions;
 export const editorReducer = editorSlice.reducer;
