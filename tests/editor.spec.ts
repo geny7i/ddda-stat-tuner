@@ -232,12 +232,24 @@ test("追加元と入替元を一つだけ選択し、解除と1Lv入替がで�
     .click();
   await expect(page.getByTestId("count-forLv100-fighter")).toHaveText("19Lv");
   await expect(page.getByTestId("count-forLv100-mage")).toHaveText("1Lv");
-  await expect(fighterStack).not.toHaveClass(/path-selected-stack/);
+  await expect(fighterStack).toHaveClass(/path-selected-stack/);
+  await expect(
+    fighterStack.getByRole("button", { name: "forLv100 の fighter 選択中" }),
+  ).toHaveAttribute("aria-pressed", "true");
   await expect(
     page.getByTestId("palette-mage").getByRole("button", {
       name: "1Lv入替",
     }),
-  ).toHaveCount(0);
+  ).toHaveCount(1);
+  await page
+    .getByTestId("palette-mage")
+    .getByRole("button", {
+      name: "1Lv入替",
+    })
+    .click();
+  await expect(page.getByTestId("count-forLv100-fighter")).toHaveText("18Lv");
+  await expect(page.getByTestId("count-forLv100-mage")).toHaveText("2Lv");
+  await expect(fighterStack).toHaveClass(/path-selected-stack/);
 });
 
 test("入替元の移動、削除後の解除、レベル帯切替を反映する", async ({ page }) => {

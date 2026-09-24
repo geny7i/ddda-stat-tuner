@@ -430,7 +430,6 @@ export function PathEditor({
     if (selectedSource.vocationId === target) return;
     if (!isVocationAvailable(range, target)) return;
     onReplace(range, selectedSource.vocationId, target);
-    setSelection(null);
   }
 
   return (
