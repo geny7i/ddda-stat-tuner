@@ -8,6 +8,7 @@ import {
 import { VOCATION_IDS } from "./vocations";
 
 const legacyCharacter: CharacterInfo = {
+  characterType: "arisen",
   weightClass: "ll",
   vocationPath: {
     onlyLv1: [VOCATION_IDS.fighter],
@@ -26,6 +27,7 @@ describe("共有コード", () => {
 
   test("空または職業が混在する未完成の経路を往復できる", () => {
     const character: CharacterInfo = {
+      characterType: "arisen",
       weightClass: "s",
       vocationPath: {
         onlyLv1: [],
@@ -43,6 +45,7 @@ describe("共有コード", () => {
       character,
     );
     expect(parseCharacterCode("1-m----")).toEqual({
+      characterType: "arisen",
       weightClass: "m",
       vocationPath: {
         onlyLv1: [],

@@ -48,10 +48,18 @@ describe("レベル帯と職業", () => {
 
   test("上級職は Lv10 以下で選択できない", () => {
     expect(
-      isVocationAvailable(LEVEL_RANGE_IDS.forLv10, VOCATION_IDS.warrior),
+      isVocationAvailable(
+        LEVEL_RANGE_IDS.forLv10,
+        VOCATION_IDS.warrior,
+        "arisen",
+      ),
     ).toBe(false);
     expect(
-      isVocationAvailable(LEVEL_RANGE_IDS.forLv100, VOCATION_IDS.warrior),
+      isVocationAvailable(
+        LEVEL_RANGE_IDS.forLv100,
+        VOCATION_IDS.warrior,
+        "arisen",
+      ),
     ).toBe(true);
     expect(
       getLevelRangeById(LEVEL_RANGE_IDS.forLv10).to -
@@ -119,6 +127,7 @@ describe("成長値と体格補正", () => {
 describe("育成経路の検証とステータス算出", () => {
   test("複数のレベル帯と体格補正を合算する", () => {
     const character: CharacterInfo = {
+      characterType: "arisen",
       weightClass: "l",
       vocationPath: {
         onlyLv1: [VOCATION_IDS.fighter],
@@ -144,7 +153,11 @@ describe("育成経路の検証とステータス算出", () => {
 
   test("未完成の経路も計算でき、体格補正だけを返す", () => {
     expect(
-      calculateStatus({ weightClass: "m", vocationPath: emptyPath() }),
+      calculateStatus({
+        characterType: "arisen",
+        weightClass: "m",
+        vocationPath: emptyPath(),
+      }),
     ).toEqual({
       hp: 0,
       st: 40,
@@ -158,30 +171,35 @@ describe("育成経路の検証とステータス算出", () => {
   test("上限超過、選択不可職業、未知の職業・体格、欠けたレベル帯を拒否する", () => {
     expect(() =>
       validateCharacterInfo({
+        characterType: "arisen",
         weightClass: "m",
         vocationPath: { ...emptyPath(), onlyLv1: ["fighter", "fighter"] },
       }),
     ).toThrow(RangeError);
     expect(() =>
       validateCharacterInfo({
+        characterType: "arisen",
         weightClass: "m",
         vocationPath: { ...emptyPath(), forLv10: ["assassin"] },
       }),
     ).toThrow(RangeError);
     expect(() =>
       validateCharacterInfo({
+        characterType: "arisen",
         weightClass: "m",
         vocationPath: { ...emptyPath(), forLv100: ["unknown"] },
       }),
     ).toThrow(RangeError);
     expect(() =>
       validateCharacterInfo({
+        characterType: "arisen",
         weightClass: "unknown",
         vocationPath: emptyPath(),
       }),
     ).toThrow(TypeError);
     expect(() =>
       validateCharacterInfo({
+        characterType: "arisen",
         weightClass: "m",
         vocationPath: { onlyLv1: [] },
       }),

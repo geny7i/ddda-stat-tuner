@@ -39,6 +39,7 @@ import {
 
 function sameCharacter(left: CharacterInfo, right: CharacterInfo): boolean {
   return (
+    left.characterType === right.characterType &&
     left.weightClass === right.weightClass &&
     LEVEL_RANGES.every(
       ({ id }) =>
@@ -54,9 +55,8 @@ export function EditorPage() {
   const appStore = useAppStore();
   const activeSearch = useRef<AbortController | null>(null);
   useEffect(() => () => activeSearch.current?.abort(), []);
-  const { path, activeRange, weightClass, focusedStats } = useAppSelector(
-    (state) => state.editor,
-  );
+  const { path, activeRange, weightClass, focusedStats, characterType } =
+    useAppSelector((state) => state.editor);
   const currentStatus = useAppSelector(selectCurrentStatus);
   const currentLevel = useAppSelector(selectCurrentLevel);
   const character = useAppSelector(selectCharacterInfo);
@@ -79,6 +79,7 @@ export function EditorPage() {
   ): Promise<RoundingSearchResult | { kind: "stale" }> {
     const editor = appStore.getState().editor;
     const expected: CharacterInfo = {
+      characterType: editor.characterType,
       vocationPath: editor.path,
       weightClass: editor.weightClass,
     };
@@ -94,6 +95,7 @@ export function EditorPage() {
       const current = appStore.getState().editor;
       if (
         !sameCharacter(expected, {
+          characterType: current.characterType,
           vocationPath: current.path,
           weightClass: current.weightClass,
         })
@@ -154,6 +156,7 @@ export function EditorPage() {
       </h2>
       <PathEditor
         key={activeRange}
+        characterType={characterType}
         path={path}
         visibleRanges={[activeRange]}
         comparisonRows={comparisonRows}

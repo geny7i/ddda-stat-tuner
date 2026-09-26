@@ -30,6 +30,7 @@ test.runIf(process.env.ROUNDING_BENCH === "1")(
     const rows = [];
     for (const mode of ["fighter", "strider", "mixed", "attack"] as const) {
       const character: CharacterInfo = {
+        characterType: "arisen",
         vocationPath: makePath(mode),
         weightClass: "m",
       };

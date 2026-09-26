@@ -4,6 +4,7 @@ import { buildShareUrl } from "./shareUrl";
 
 test("現在の配置先を使って共有 URL を組み立てる", () => {
   const character: CharacterInfo = {
+    characterType: "arisen",
     weightClass: "ll",
     vocationPath: {
       onlyLv1: [VOCATION_IDS.fighter],

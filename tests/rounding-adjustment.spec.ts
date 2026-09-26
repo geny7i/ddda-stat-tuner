@@ -17,6 +17,7 @@ function mixedCharacter(): CharacterInfo {
     ),
   ]);
   return {
+    characterType: "arisen",
     vocationPath: Object.fromEntries(entries) as unknown as VocationPath,
     weightClass: "m",
   };

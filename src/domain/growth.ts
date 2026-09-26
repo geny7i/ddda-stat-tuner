@@ -1,8 +1,10 @@
 import { type VocationId, VOCATION_IDS } from "./vocations";
+import { type CharacterType } from "./characterType";
 import {
   type LevelRange,
   type LevelRangeId,
   LEVEL_RANGE_IDS,
+  getAvailableVocations,
 } from "./levelRanges";
 import { type StatId, type Status, scoreStatus } from "./status";
 
@@ -338,9 +340,10 @@ export function sortByFocusedStatIds(
 export function getComparisonRows(
   range: LevelRange,
   focusedStatIds: readonly StatId[],
+  characterType: CharacterType,
 ): StatusGrowthWithScore[] {
   return sortByFocusedStatIds(
-    range.availableVocationIds.map((vocationId) =>
+    getAvailableVocations(range.id, characterType).map((vocationId) =>
       getStatusGrowth(vocationId, range.id),
     ),
     focusedStatIds,

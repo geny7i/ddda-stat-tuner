@@ -31,38 +31,56 @@ describe("能力を最大化する職業の選択", () => {
     (statId) => {
       const strategy = { kind: "maximize-stat", statId } as const;
       expect(
-        LEVEL_RANGES.map((range) => selectVocationForStrategy(range, strategy)),
+        LEVEL_RANGES.map((range) =>
+          selectVocationForStrategy(range, strategy, "arisen"),
+        ),
       ).toEqual(expectedByStat[statId]);
     },
   );
 
   test("同値は選択可能職業の定義順で決まる", () => {
     expect(
-      selectVocationForStrategy(LEVEL_RANGES[0], {
-        kind: "maximize-stat",
-        statId: "st",
-      }),
+      selectVocationForStrategy(
+        LEVEL_RANGES[0],
+        {
+          kind: "maximize-stat",
+          statId: "st",
+        },
+        "arisen",
+      ),
     ).toBe("fighter");
     expect(
-      selectVocationForStrategy(LEVEL_RANGES[3], {
-        kind: "maximize-stat",
-        statId: "hp",
-      }),
+      selectVocationForStrategy(
+        LEVEL_RANGES[3],
+        {
+          kind: "maximize-stat",
+          statId: "hp",
+        },
+        "arisen",
+      ),
     ).toBe("fighter");
     expect(
-      selectVocationForStrategy(LEVEL_RANGES[3], {
-        kind: "maximize-stat",
-        statId: "mdef",
-      }),
+      selectVocationForStrategy(
+        LEVEL_RANGES[3],
+        {
+          kind: "maximize-stat",
+          statId: "mdef",
+        },
+        "arisen",
+      ),
     ).toBe("mage");
   });
 });
 
 test.each(STAT_IDS)("%s 特化で空の経路の全枠を埋める", (statId) => {
-  const result = adjustPath(emptyPath, {
-    strategy: { kind: "maximize-stat", statId },
-    scope: { kind: "unfilled" },
-  });
+  const result = adjustPath(
+    emptyPath,
+    {
+      strategy: { kind: "maximize-stat", statId },
+      scope: { kind: "unfilled" },
+    },
+    "arisen",
+  );
   expect(result.changedCount).toBe(200);
   expect(countUnfilledLevels(result.path)).toBe(0);
   for (const [index, range] of LEVEL_RANGES.entries()) {
@@ -82,10 +100,14 @@ test("途中までの経路では既存の選択と順序を保って空き枠�
     forLv200: Array(100).fill("warrior"),
   };
   const before = structuredClone(path);
-  const result = adjustPath(path, {
-    strategy: { kind: "maximize-stat", statId: "matk" },
-    scope: { kind: "unfilled" },
-  });
+  const result = adjustPath(
+    path,
+    {
+      strategy: { kind: "maximize-stat", statId: "matk" },
+      scope: { kind: "unfilled" },
+    },
+    "arisen",
+  );
 
   expect(countUnfilledLevels(path)).toBe(94);
   expect(result.changedCount).toBe(94);
@@ -114,10 +136,14 @@ test("満杯の経路では変更件数が 0 で内容を変えない", () => {
     forLv100: Array(90).fill("assassin"),
     forLv200: Array(100).fill("mage"),
   };
-  const result = adjustPath(full, {
-    strategy: { kind: "maximize-stat", statId: "hp" },
-    scope: { kind: "unfilled" },
-  });
+  const result = adjustPath(
+    full,
+    {
+      strategy: { kind: "maximize-stat", statId: "hp" },
+      scope: { kind: "unfilled" },
+    },
+    "arisen",
+  );
   expect(countUnfilledLevels(full)).toBe(0);
   expect(result.changedCount).toBe(0);
   expect(result.path).toEqual(full);

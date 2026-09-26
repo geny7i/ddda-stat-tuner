@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import { createAppStore } from "../../app/store";
+import { type CharacterInfo } from "../../domain";
 import {
   addSteps,
   applyAdjustment,
@@ -9,6 +10,90 @@ import {
   setActiveRange,
   setWeightClass,
 } from "./editorSlice";
+import { selectCharacterInfo, selectComparisonRows } from "./selectors";
+
+test("種別を編集状態・比較・手動編集・自動入力へ渡す", () => {
+  const store = createAppStore();
+  expect(store.getState().editor.characterType).toBe("arisen");
+  const pawn: CharacterInfo = {
+    characterType: "pawn",
+    weightClass: "ll",
+    vocationPath: {
+      onlyLv1: [],
+      forLv10: [],
+      forLv100: ["fighter"],
+      forLv200: [],
+    },
+  };
+  store.dispatch(restoreCharacter(pawn));
+  expect(selectCharacterInfo(store.getState())).toEqual(pawn);
+  expect(selectComparisonRows(store.getState())).toHaveLength(6);
+  const before = store.getState();
+  store.dispatch(
+    addSteps({ range: "forLv100", vocation: "assassin", count: 10 }),
+  );
+  store.dispatch(
+    replaceStep({
+      range: "forLv100",
+      source: "fighter",
+      target: "magick_archer",
+    }),
+  );
+  expect(store.getState()).toBe(before);
+  store.dispatch(addSteps({ range: "forLv200", vocation: "ranger", count: 1 }));
+  store.dispatch(
+    applyAdjustment({
+      strategy: { kind: "maximize-stat", statId: "atk" },
+      scope: { kind: "unfilled" },
+    }),
+  );
+  expect(store.getState().editor.path.forLv100).toEqual([
+    "fighter",
+    ...Array(89).fill("warrior"),
+  ]);
+  expect(store.getState().editor.path.forLv200).toEqual([
+    "ranger",
+    ...Array(99).fill("warrior"),
+  ]);
+  expect(store.getState().editor.characterType).toBe("pawn");
+  expect(store.getState().editor.weightClass).toBe("ll");
+  store.dispatch(restoreCharacter({ ...pawn, characterType: "arisen" }));
+  expect(selectComparisonRows(store.getState())).toHaveLength(9);
+});
+
+test("種別に反する復元・調整結果を拒否し、種別違いの古い結果は適用しない", () => {
+  const store = createAppStore();
+  const pawn: CharacterInfo = {
+    characterType: "pawn",
+    weightClass: "m",
+    vocationPath: {
+      onlyLv1: [],
+      forLv10: [],
+      forLv100: ["fighter"],
+      forLv200: [],
+    },
+  };
+  store.dispatch(restoreCharacter(pawn));
+  const before = store.getState();
+  const forbidden = { ...pawn.vocationPath, forLv100: ["assassin"] } as const;
+  expect(() =>
+    store.dispatch(restoreCharacter({ ...pawn, vocationPath: forbidden })),
+  ).toThrow("選択できない職業");
+  expect(store.getState()).toBe(before);
+  expect(() =>
+    store.dispatch(
+      applyRoundingAdjustment({ expected: pawn, path: forbidden }),
+    ),
+  ).toThrow("選択できない職業");
+  expect(store.getState()).toBe(before);
+  store.dispatch(
+    applyRoundingAdjustment({
+      expected: { ...pawn, characterType: "arisen" },
+      path: { ...pawn.vocationPath, forLv100: ["mage"] },
+    }),
+  );
+  expect(store.getState()).toBe(before);
+});
 
 test("実行時の経路を使って一度に更新し、選択済み職業と体格を保つ", () => {
   const store = createAppStore();
@@ -66,6 +151,7 @@ test("満杯では経路を更新しない", () => {
 test("倍数調整は開始時の経路と体格が一致する場合だけ一度に反映する", () => {
   const store = createAppStore();
   const expected = {
+    characterType: "arisen",
     vocationPath: {
       onlyLv1: ["fighter"],
       forLv10: Array(9).fill("fighter"),

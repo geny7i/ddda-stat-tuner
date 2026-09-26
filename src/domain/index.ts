@@ -1,4 +1,5 @@
 export * from "./character";
+export * from "./characterType";
 export * from "./growth";
 export * from "./levelRanges";
 export * from "./pathEditing";

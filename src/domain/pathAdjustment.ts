@@ -1,6 +1,11 @@
-import type { VocationPath } from "./character";
+import { validateVocationPath, type VocationPath } from "./character";
+import { type CharacterType } from "./characterType";
 import { getStatusGrowth } from "./growth";
-import { LEVEL_RANGES, type LevelRange } from "./levelRanges";
+import {
+  getAvailableVocations,
+  LEVEL_RANGES,
+  type LevelRange,
+} from "./levelRanges";
 import type { StatId } from "./status";
 import type { VocationId } from "./vocations";
 
@@ -24,8 +29,9 @@ export type PathAdjustmentResult = {
 export function selectVocationForStrategy(
   range: LevelRange,
   strategy: PathAdjustmentStrategy,
+  characterType: CharacterType,
 ): VocationId {
-  const [first, ...remaining] = range.availableVocationIds;
+  const [first, ...remaining] = getAvailableVocations(range.id, characterType);
   if (!first)
     throw new RangeError(`${range.id} に選択可能な職業がありません。`);
 
@@ -52,6 +58,7 @@ export function countUnfilledLevels(path: VocationPath): number {
 function fillUnfilledLevels(
   path: VocationPath,
   strategy: PathAdjustmentStrategy,
+  characterType: CharacterType,
 ): PathAdjustmentResult {
   const nextPath: Record<keyof VocationPath, readonly VocationId[]> = {
     ...path,
@@ -62,7 +69,11 @@ function fillUnfilledLevels(
     const steps = path[range.id];
     const missing = range.to - range.from + 1 - steps.length;
     if (missing <= 0) continue;
-    const vocationId = selectVocationForStrategy(range, strategy);
+    const vocationId = selectVocationForStrategy(
+      range,
+      strategy,
+      characterType,
+    );
     nextPath[range.id] = [
       ...steps,
       ...Array<VocationId>(missing).fill(vocationId),
@@ -76,9 +87,11 @@ function fillUnfilledLevels(
 export function adjustPath(
   path: VocationPath,
   request: PathAdjustmentRequest,
+  characterType: CharacterType,
 ): PathAdjustmentResult {
+  validateVocationPath(path, characterType);
   switch (request.scope.kind) {
     case "unfilled":
-      return fillUnfilledLevels(path, request.strategy);
+      return fillUnfilledLevels(path, request.strategy, characterType);
   }
 }

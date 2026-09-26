@@ -11,7 +11,11 @@ export const selectEditorState = (state: RootState) => state.editor;
 
 export const selectCharacterInfo = createSelector(
   [selectEditorState],
-  ({ path, weightClass }) => ({ vocationPath: path, weightClass }),
+  ({ path, weightClass, characterType }) => ({
+    vocationPath: path,
+    weightClass,
+    characterType,
+  }),
 );
 
 export const selectCurrentStatus = createSelector(
@@ -34,7 +38,8 @@ export const selectComparisonRows = createSelector(
   [
     (state: RootState) => state.editor.activeRange,
     (state: RootState) => state.editor.focusedStats,
+    (state: RootState) => state.editor.characterType,
   ],
-  (rangeId, focusedStats) =>
-    getComparisonRows(getLevelRangeById(rangeId), focusedStats),
+  (rangeId, focusedStats, characterType) =>
+    getComparisonRows(getLevelRangeById(rangeId), focusedStats, characterType),
 );

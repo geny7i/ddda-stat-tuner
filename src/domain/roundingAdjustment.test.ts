@@ -22,6 +22,7 @@ function fullPath(vocation: "fighter" | "strider" | "mage"): VocationPath {
 }
 
 const fighter: CharacterInfo = {
+  characterType: "arisen",
   vocationPath: fullPath("fighter"),
   weightClass: "m",
 };
@@ -33,6 +34,7 @@ function cyclicSteps(range: LevelRange) {
   );
 }
 const mixed: CharacterInfo = {
+  characterType: "arisen",
   vocationPath: {
     onlyLv1: cyclicSteps(LEVEL_RANGES[0]),
     forLv10: cyclicSteps(LEVEL_RANGES[1]),
@@ -170,6 +172,7 @@ test.each(WEIGHT_CLASSES)(
   (weightClass) => {
     for (const [i, vocation] of VOCATIONS.entries()) {
       const character: CharacterInfo = {
+        characterType: "arisen",
         weightClass,
         vocationPath: {
           ...fullPath((["fighter", "strider", "mage"] as const)[i % 3]),
@@ -191,6 +194,7 @@ test("固定シードの混在経路でも変更元の数を超えず復元で�
   };
   for (let sample = 0; sample < 20; sample++) {
     const character: CharacterInfo = {
+      characterType: "arisen",
       weightClass: WEIGHT_CLASSES[sample % WEIGHT_CLASSES.length],
       vocationPath: Object.fromEntries(
         LEVEL_RANGES.map((range) => [

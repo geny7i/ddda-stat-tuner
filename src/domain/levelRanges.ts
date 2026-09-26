@@ -1,4 +1,5 @@
 import { VOCATIONS, VOCATION_IDS, type VocationId } from "./vocations";
+import { assertCharacterType, type CharacterType } from "./characterType";
 
 export const LEVEL_RANGE_IDS = {
   onlyLv1: "onlyLv1",
@@ -72,6 +73,21 @@ export function getLevelRangeForLevel(level: number): LevelRange {
 export function isVocationAvailable(
   rangeId: LevelRangeId,
   vocationId: VocationId,
+  characterType: CharacterType,
 ): boolean {
-  return getLevelRangeById(rangeId).availableVocationIds.includes(vocationId);
+  return getAvailableVocations(rangeId, characterType).includes(vocationId);
+}
+
+export function getAvailableVocations(
+  rangeId: LevelRangeId,
+  characterType: CharacterType,
+): readonly VocationId[] {
+  assertCharacterType(characterType);
+  const vocations = getLevelRangeById(rangeId).availableVocationIds;
+  return characterType === "arisen"
+    ? vocations
+    : vocations.filter(
+        (id) =>
+          id !== "assassin" && id !== "magick_archer" && id !== "mystic_knight",
+      );
 }

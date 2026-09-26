@@ -1,4 +1,5 @@
-import { type VocationPath } from "./character";
+import { validateVocationPath, type VocationPath } from "./character";
+import { type CharacterType } from "./characterType";
 import {
   getLevelRangeById,
   isVocationAvailable,
@@ -11,14 +12,16 @@ export function addToPath(
   rangeId: LevelRangeId,
   vocationId: VocationId,
   count: number,
+  characterType: CharacterType,
 ): VocationPath {
+  validateVocationPath(path, characterType);
   const { from, to } = getLevelRangeById(rangeId);
   const steps = path[rangeId];
   const available = to - from + 1 - steps.length;
   if (
     !Number.isInteger(count) ||
     count <= 0 ||
-    !isVocationAvailable(rangeId, vocationId) ||
+    !isVocationAvailable(rangeId, vocationId, characterType) ||
     available <= 0
   )
     return path;
@@ -59,12 +62,14 @@ export function replaceInPath(
   rangeId: LevelRangeId,
   sourceId: VocationId,
   targetId: VocationId,
+  characterType: CharacterType,
 ): VocationPath {
+  validateVocationPath(path, characterType);
   const index = path[rangeId].indexOf(sourceId);
   if (
     sourceId === targetId ||
     index < 0 ||
-    !isVocationAvailable(rangeId, targetId)
+    !isVocationAvailable(rangeId, targetId, characterType)
   )
     return path;
   const steps = [...path[rangeId]];
