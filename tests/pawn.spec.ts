@@ -166,13 +166,75 @@ test("ポーンの10倍数条件・上限表示を更新し、調整後に種別
   await page.getByRole("button", { name: "Lv2～10 (9/9)" }).click();
   await expect(page.getByTestId("count-forLv10-mage")).toHaveText("1Lv");
   await page.getByRole("button", { name: "Lv11～100 (90/90)" }).click();
-  await page.getByRole("link", { name: "チャート" }).click();
+  await page
+    .getByRole("navigation", { name: "メインメニュー" })
+    .getByRole("link", { name: "使い方" })
+    .click();
   await expect(
-    page.getByText("キャラクター: ポーン（切り替えは育成計画画面）"),
+    page.getByRole("heading", { name: "使い方", level: 1 }),
   ).toBeVisible();
+  await page
+    .getByRole("link", { name: "育成計画へ戻る", exact: true })
+    .first()
+    .click();
   await expect(
-    page.getByRole("list", { name: "職業スコアの比較" }).getByRole("listitem"),
-  ).toHaveCount(6);
+    page.getByRole("radio", { name: "ポーン", exact: true }),
+  ).toBeChecked();
+  await expect(page.locator(".comparison-card")).toHaveCount(6);
+  expect(
+    await page.locator('[data-testid^="current-"]').allTextContents(),
+  ).toEqual(values);
+});
+
+test("狭い画面・文字拡大でも種別確認をスクロールし、フォーカスを閉じ込めて取消できる", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/#/restore?c=1-ll-z-z9-t5a-u64");
+  await page.evaluate(() => {
+    document.documentElement.style.fontSize = "32px";
+  });
+  const pawn = page.getByRole("radio", { name: "ポーン", exact: true });
+  await pawn.click();
+  const dialog = page.getByRole("dialog", {
+    name: "職業入力をリセットしますか？",
+  });
+  const cancel = dialog.getByRole("button", { name: "キャンセル" });
+  const confirm = dialog.getByRole("button", {
+    name: "リセットして切り替える",
+  });
+  await expect(cancel).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(confirm).toBeFocused();
+  await page.keyboard.press("Tab");
+  expect(
+    await dialog.evaluate((element) => {
+      const active = document.activeElement;
+      return (
+        active instanceof HTMLElement &&
+        active.matches("button, input, select, textarea, a") &&
+        !element.contains(active)
+      );
+    }),
+  ).toBe(false);
+  expect(
+    await dialog.evaluate(
+      (element) => element.scrollHeight > element.clientHeight,
+    ),
+  ).toBe(true);
+  await dialog.evaluate((element) => {
+    element.scrollTop = element.scrollHeight;
+  });
+  expect(await dialog.evaluate((element) => element.scrollTop)).toBeGreaterThan(
+    0,
+  );
+  await cancel.click();
+  await expect(dialog).not.toBeVisible();
+  await expect(pawn).toBeFocused();
+  await expect(
+    page.getByRole("radio", { name: "覚者", exact: true }),
+  ).toBeChecked();
+  await expect(page.getByText("Lv 200", { exact: true })).toBeVisible();
 });
 
 test("不正なポーン共有コードは現在の計画を維持し、旧コードは覚者に復元する", async ({

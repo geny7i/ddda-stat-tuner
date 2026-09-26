@@ -49,7 +49,7 @@ export function CharacterTypeSelector({
       </fieldset>
       <dialog
         ref={dialogRef}
-        className="editor-help-dialog"
+        className="editor-confirm-dialog"
         aria-labelledby="character-switch-title"
         aria-describedby="character-switch-description"
         onClose={() => {
@@ -57,7 +57,7 @@ export function CharacterTypeSelector({
           triggerRef.current?.focus();
         }}
       >
-        <div className="editor-help-content">
+        <div className="editor-confirm-content">
           <h2 id="character-switch-title">職業入力をリセットしますか？</h2>
           <p id="character-switch-description">
             {pending && CHARACTER_TYPE_LABELS[pending]}

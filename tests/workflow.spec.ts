@@ -25,8 +25,18 @@ test("育成経路の作成から共有・復元・比較まで一連の操作�
   await expect(page.getByText("Lv 10")).toBeVisible();
   await expect(page.getByTestId("current-hp")).toHaveText("648");
 
-  await page.getByRole("link", { name: "チャート" }).click();
-  await expect(page.getByRole("meter")).toHaveCount(3);
+  await page
+    .getByRole("navigation", { name: "メインメニュー" })
+    .getByRole("link", { name: "使い方" })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "使い方", level: 1 }),
+  ).toBeVisible();
+  await page
+    .getByRole("link", { name: "育成計画へ戻る", exact: true })
+    .first()
+    .click();
+  await expect(page.locator(".comparison-card")).toHaveCount(3);
   await page.getByRole("checkbox", { name: "HP" }).uncheck();
   await page.getByRole("button", { name: "共有 URL をコピー" }).click();
   const shareUrl = await page.evaluate(() => navigator.clipboard.readText());

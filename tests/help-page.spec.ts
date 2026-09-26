@@ -5,6 +5,45 @@ const roundingId = "help-ステータスの510の倍数への調整について"
 const sectionUrl = (id: string) =>
   `./#/help?${new URLSearchParams({ section: id })}`;
 
+for (const width of [1280, 390]) {
+  test(`${width}px: メニューとタイトル横のリンクから同じ使い方ページを開く`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 844 });
+    await page.goto("./#/");
+    const menu = page.getByRole("navigation", { name: "メインメニュー" });
+    await expect(menu.getByRole("link")).toHaveText([
+      "育成計画",
+      "使い方",
+      "免責事項",
+    ]);
+    await menu.getByRole("link", { name: "使い方" }).click();
+    await expect(page).toHaveURL(/#\/help$/);
+    await expect(
+      page.getByRole("heading", { name: "使い方", level: 1 }),
+    ).toBeVisible();
+    await page
+      .getByRole("link", { name: "育成計画へ戻る", exact: true })
+      .first()
+      .click();
+    const help = page
+      .locator(".editor-title-row")
+      .getByRole("link", { name: "使い方" });
+    await help.focus();
+    await page.keyboard.press("Enter");
+    await expect(page).toHaveURL(/#\/help$/);
+    await expect(
+      page.getByRole("heading", { name: "使い方", level: 1 }),
+    ).toBeVisible();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await page
+      .getByRole("navigation", { name: "目次" })
+      .getByRole("link", { name: "スコアについて", exact: true })
+      .click();
+    await expectSection(page, scoreId);
+  });
+}
+
 async function expectSection(page: Page, id: string) {
   const heading = page.locator(`[id="${id}"]`);
   await expect(heading).toBeFocused();
