@@ -1,9 +1,14 @@
+import { lazy, Suspense } from "react";
 import { HashRouter, Link, NavLink, Route, Routes } from "react-router";
 import { EditorPage } from "./features/pathEditor/EditorPage";
 import { RestorePage } from "./features/sharing/RestorePage";
 import { ChartPage } from "./pages/ChartPage";
 import { DisclaimerPage } from "./pages/DisclaimerPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
+
+const HelpPage = lazy(() =>
+  import("./pages/HelpPage").then((module) => ({ default: module.HelpPage })),
+);
 
 const pages = [
   { to: "/", label: "育成計画" },
@@ -39,6 +44,16 @@ export function App() {
         <Routes>
           <Route path="/" element={<EditorPage />} />
           <Route path="/chart" element={<ChartPage />} />
+          <Route
+            path="/help"
+            element={
+              <Suspense
+                fallback={<p role="status">使い方を読み込んでいます。</p>}
+              >
+                <HelpPage />
+              </Suspense>
+            }
+          />
           <Route path="/disclaimer" element={<DisclaimerPage />} />
           <Route path="/restore" element={<RestorePage />} />
           <Route path="*" element={<NotFoundPage />} />
