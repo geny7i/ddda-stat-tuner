@@ -26,7 +26,6 @@
   margin: 0;
 }
 
-.editor-help-link,
 .editor-confirm-dialog button {
   border: 1px solid #164f85;
   border-radius: 0.35rem;
@@ -38,7 +37,6 @@
   text-decoration: none;
 }
 
-.editor-help-link:focus-visible,
 .editor-confirm-dialog button:focus-visible,
 .editor-confirm-dialog h2:focus-visible {
   outline: 3px solid #ff9d00;

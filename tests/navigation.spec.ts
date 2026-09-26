@@ -38,7 +38,7 @@ for (const width of [1280, 390]) {
     await page.getByRole("checkbox", { name: "HP" }).uncheck();
 
     await page
-      .locator(".editor-title-row")
+      .getByRole("navigation", { name: "メインメニュー" })
       .getByRole("link", { name: "使い方" })
       .click();
     await expect(

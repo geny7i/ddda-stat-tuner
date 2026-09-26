@@ -174,8 +174,8 @@ test("ポーンの10倍数条件・上限表示を更新し、調整後に種別
     page.getByRole("heading", { name: "使い方", level: 1 }),
   ).toBeVisible();
   await page
-    .getByRole("link", { name: "育成計画へ戻る", exact: true })
-    .first()
+    .getByRole("navigation", { name: "メインメニュー" })
+    .getByRole("link", { name: "育成計画", exact: true })
     .click();
   await expect(
     page.getByRole("radio", { name: "ポーン", exact: true }),

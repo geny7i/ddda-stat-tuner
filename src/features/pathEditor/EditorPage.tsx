@@ -1,5 +1,4 @@
 import { useEffect, useRef } from "react";
-import { Link } from "react-router";
 import {
   countUnfilledLevels,
   getRoundingEligibility,
@@ -157,9 +156,6 @@ export function EditorPage() {
     <div className="editor-page">
       <div className="editor-title-row">
         <h1>育成計画</h1>
-        <Link className="editor-help-link" to="/help">
-          使い方
-        </Link>
       </div>
 
       <div className="editor-sticky-bar">

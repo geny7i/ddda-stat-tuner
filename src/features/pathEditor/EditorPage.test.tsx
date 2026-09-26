@@ -45,17 +45,13 @@ test("使い方への移動で探索を中断し、往復後も遅い旧結果�
   render(
     <Provider store={store}>
       <MemoryRouter>
+        <nav aria-label="メインメニュー">
+          <Link to="/">育成計画</Link>
+          <Link to="/help">使い方</Link>
+        </nav>
         <Routes>
           <Route path="/" element={<EditorPage />} />
-          <Route
-            path="/help"
-            element={
-              <>
-                <h1>使い方</h1>
-                <Link to="/">育成計画へ戻る</Link>
-              </>
-            }
-          />
+          <Route path="/help" element={<h1>使い方</h1>} />
         </Routes>
       </MemoryRouter>
     </Provider>,
@@ -65,7 +61,7 @@ test("使い方への移動で探索を中断し、往復後も遅い旧結果�
   const signal = vi.mocked(runRoundingSearch).mock.calls[0][2];
   await user.click(screen.getByRole("link", { name: "使い方" }));
   expect(signal.aborted).toBe(true);
-  await user.click(screen.getByRole("link", { name: "育成計画へ戻る" }));
+  await user.click(screen.getByRole("link", { name: "育成計画" }));
   await user.selectOptions(screen.getByRole("combobox"), "round-5");
   await user.click(screen.getByRole("button", { name: "自動調整を実行" }));
   await act(async () => {

@@ -60,8 +60,8 @@ test("自動調整から使い方・共有・復元まで同じ育成経路を�
     page.getByRole("heading", { name: "使い方", level: 1 }),
   ).toBeVisible();
   await page
-    .getByRole("link", { name: "育成計画へ戻る", exact: true })
-    .first()
+    .getByRole("navigation", { name: "メインメニュー" })
+    .getByRole("link", { name: "育成計画", exact: true })
     .click();
   await expect(page.getByText("Lv 200")).toBeVisible();
   await expect(page.locator(".comparison-card")).toHaveCount(9);

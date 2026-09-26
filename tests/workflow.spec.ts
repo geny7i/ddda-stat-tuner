@@ -33,8 +33,8 @@ test("育成経路の作成から共有・復元・比較まで一連の操作�
     page.getByRole("heading", { name: "使い方", level: 1 }),
   ).toBeVisible();
   await page
-    .getByRole("link", { name: "育成計画へ戻る", exact: true })
-    .first()
+    .getByRole("navigation", { name: "メインメニュー" })
+    .getByRole("link", { name: "育成計画", exact: true })
     .click();
   await expect(page.locator(".comparison-card")).toHaveCount(3);
   await page.getByRole("checkbox", { name: "HP" }).uncheck();

@@ -87,8 +87,8 @@ for (const multiple of [5, 10] as const) {
       page.getByRole("heading", { name: "使い方", level: 1 }),
     ).toBeVisible();
     await page
-      .getByRole("link", { name: "育成計画へ戻る", exact: true })
-      .first()
+      .getByRole("navigation", { name: "メインメニュー" })
+      .getByRole("link", { name: "育成計画", exact: true })
       .click();
     await expect(page.getByText("Lv 200")).toBeVisible();
     for (const id of STAT_IDS)
