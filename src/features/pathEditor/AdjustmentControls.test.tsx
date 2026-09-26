@@ -1,7 +1,21 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test, vi } from "vitest";
+import { type CharacterInfo } from "../../domain";
 import { AdjustmentControls } from "./AdjustmentControls";
+
+function makeCharacter(unfilled = 0): CharacterInfo {
+  return {
+    characterType: "arisen",
+    weightClass: "m",
+    vocationPath: {
+      onlyLv1: ["fighter"],
+      forLv10: Array(9).fill("fighter"),
+      forLv100: Array(90).fill("fighter"),
+      forLv200: Array(100 - unfilled).fill("fighter"),
+    },
+  };
+}
 
 test("成立しない倍数調整は再試行エラーや成功として扱わず、理由を示す", async () => {
   const user = userEvent.setup();
@@ -12,9 +26,14 @@ test("成立しない倍数調整は再試行エラーや成功として扱わ�
   });
   render(
     <AdjustmentControls
+      character={makeCharacter(0)}
+      revision={0}
       unfilledCount={0}
-      onApply={vi.fn()}
-      onRound={onRound}
+      onApply={() => ({ changedCount: 0, revision: 0 })}
+      onRound={async (multiple) => ({
+        result: await onRound(multiple),
+        revision: 0,
+      })}
     />,
   );
   await user.selectOptions(screen.getByRole("combobox"), "round-10");
@@ -34,8 +53,10 @@ test("6種類の説明を実行前に示し、追加件数を通知する", asyn
   const user = userEvent.setup();
   render(
     <AdjustmentControls
+      character={makeCharacter(7)}
+      revision={0}
       unfilledCount={7}
-      onApply={onApply}
+      onApply={(statId) => ({ changedCount: onApply(statId), revision: 0 })}
       onRound={vi.fn()}
     />,
   );
@@ -59,8 +80,10 @@ test("空き枠がないと実行できない", () => {
   const onApply = vi.fn();
   render(
     <AdjustmentControls
+      character={makeCharacter(0)}
+      revision={0}
       unfilledCount={0}
-      onApply={onApply}
+      onApply={(statId) => ({ changedCount: onApply(statId), revision: 0 })}
       onRound={vi.fn()}
     />,
   );
@@ -74,9 +97,14 @@ test("倍数調整は200Lv入力済みの場合だけ実行できる", async () 
   const user = userEvent.setup();
   const { rerender } = render(
     <AdjustmentControls
+      character={makeCharacter(2)}
+      revision={0}
       unfilledCount={2}
-      onApply={vi.fn()}
-      onRound={onRound}
+      onApply={() => ({ changedCount: 0, revision: 0 })}
+      onRound={async (multiple) => ({
+        result: await onRound(multiple),
+        revision: 0,
+      })}
     />,
   );
   const select = screen.getByRole("combobox", { name: "調整の種類" });
@@ -87,9 +115,14 @@ test("倍数調整は200Lv入力済みの場合だけ実行できる", async () 
 
   rerender(
     <AdjustmentControls
+      character={makeCharacter(0)}
+      revision={0}
       unfilledCount={0}
-      onApply={vi.fn()}
-      onRound={onRound}
+      onApply={() => ({ changedCount: 0, revision: 0 })}
+      onRound={async (multiple) => ({
+        result: await onRound(multiple),
+        revision: 0,
+      })}
     />,
   );
   expect(screen.getByText("変更対象: 最大26Lv")).toBeVisible();
@@ -109,9 +142,14 @@ test("倍数調整の結果を通知し、変更前後の値を示す", async ()
   });
   render(
     <AdjustmentControls
+      character={makeCharacter(0)}
+      revision={0}
       unfilledCount={0}
-      onApply={vi.fn()}
-      onRound={onRound}
+      onApply={() => ({ changedCount: 0, revision: 0 })}
+      onRound={async (multiple) => ({
+        result: await onRound(multiple),
+        revision: 0,
+      })}
     />,
   );
   await user.selectOptions(screen.getByRole("combobox"), "round-10");
@@ -139,9 +177,14 @@ test("探索エラーと古い探索結果を別の通知で示す", async () =>
     .mockResolvedValueOnce({ kind: "stale" });
   render(
     <AdjustmentControls
+      character={makeCharacter(0)}
+      revision={0}
       unfilledCount={0}
-      onApply={vi.fn()}
-      onRound={onRound}
+      onApply={() => ({ changedCount: 0, revision: 0 })}
+      onRound={async (multiple) => ({
+        result: await onRound(multiple),
+        revision: 0,
+      })}
     />,
   );
   await user.selectOptions(screen.getByRole("combobox"), "round-5");
@@ -169,9 +212,14 @@ test("変更が0Lvの場合は既に条件を満たすことを通知する", as
   });
   render(
     <AdjustmentControls
+      character={makeCharacter(0)}
+      revision={0}
       unfilledCount={0}
-      onApply={vi.fn()}
-      onRound={onRound}
+      onApply={() => ({ changedCount: 0, revision: 0 })}
+      onRound={async (multiple) => ({
+        result: await onRound(multiple),
+        revision: 0,
+      })}
     />,
   );
   await user.selectOptions(screen.getByRole("combobox"), "round-5");

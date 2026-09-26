@@ -1,11 +1,11 @@
 import { useEffect, useRef } from "react";
 import {
   countUnfilledLevels,
+  getRoundingEligibility,
   LEVEL_RANGES,
   WEIGHT_CLASSES,
   type CharacterInfo,
   type RoundingMultiple,
-  type RoundingSearchResult,
   type StatId,
   type WeightClass,
 } from "../../domain";
@@ -20,9 +20,11 @@ import {
   setActiveRange,
   setWeightClass,
   toggleFocusedStat,
+  switchCharacterType,
 } from "./editorSlice";
 import { PathEditor } from "./PathEditor";
-import { AdjustmentControls } from "./AdjustmentControls";
+import { AdjustmentControls, type RoundingOutcome } from "./AdjustmentControls";
+import { CharacterTypeSelector } from "./CharacterTypeSelector";
 import { runRoundingSearch } from "./runRoundingSearch";
 import { FocusOptions } from "./FocusOptions";
 import { StatusSummary } from "./StatusSummary";
@@ -54,16 +56,37 @@ export function EditorPage() {
   const dispatch = useAppDispatch();
   const appStore = useAppStore();
   const activeSearch = useRef<AbortController | null>(null);
-  useEffect(() => () => activeSearch.current?.abort(), []);
-  const { path, activeRange, weightClass, focusedStats, characterType } =
-    useAppSelector((state) => state.editor);
+  useEffect(() => {
+    let revision = appStore.getState().editor.revision;
+    const unsubscribe = appStore.subscribe(() => {
+      const current = appStore.getState().editor.revision;
+      if (current !== revision) {
+        activeSearch.current?.abort();
+        activeSearch.current = null;
+        revision = current;
+      }
+    });
+    return () => {
+      unsubscribe();
+      activeSearch.current?.abort();
+    };
+  }, [appStore]);
+  const {
+    path,
+    activeRange,
+    weightClass,
+    focusedStats,
+    characterType,
+    revision,
+    resetId,
+  } = useAppSelector((state) => state.editor);
   const currentStatus = useAppSelector(selectCurrentStatus);
   const currentLevel = useAppSelector(selectCurrentLevel);
   const character = useAppSelector(selectCharacterInfo);
   const comparisonRows = useAppSelector(selectComparisonRows);
   const unfilledCount = useAppSelector(selectUnfilledCount);
 
-  function applySelectedAdjustment(statId: StatId): number {
+  function applySelectedAdjustment(statId: StatId) {
     const before = countUnfilledLevels(appStore.getState().editor.path);
     dispatch(
       applyAdjustment({
@@ -71,18 +94,26 @@ export function EditorPage() {
         scope: { kind: "unfilled" },
       }),
     );
-    return before - countUnfilledLevels(appStore.getState().editor.path);
+    const current = appStore.getState().editor;
+    return {
+      changedCount: before - countUnfilledLevels(current.path),
+      revision: current.revision,
+    };
   }
 
   async function applyRounding(
     multiple: RoundingMultiple,
-  ): Promise<RoundingSearchResult | { kind: "stale" }> {
+  ): Promise<{ result: RoundingOutcome; revision: number }> {
     const editor = appStore.getState().editor;
     const expected: CharacterInfo = {
       characterType: editor.characterType,
       vocationPath: editor.path,
       weightClass: editor.weightClass,
     };
+    const expectedRevision = editor.revision;
+    const eligibility = getRoundingEligibility(expected, multiple);
+    if (eligibility.kind !== "ready")
+      return { result: eligibility, revision: expectedRevision };
     const controller = new AbortController();
     activeSearch.current?.abort();
     activeSearch.current = controller;
@@ -94,18 +125,29 @@ export function EditorPage() {
       );
       const current = appStore.getState().editor;
       if (
+        controller.signal.aborted ||
+        activeSearch.current !== controller ||
+        current.revision !== expectedRevision ||
         !sameCharacter(expected, {
           characterType: current.characterType,
           vocationPath: current.path,
           weightClass: current.weightClass,
         })
       ) {
-        return { kind: "stale" };
+        return { result: { kind: "stale" }, revision: expectedRevision };
       }
+      // Applying our own result changes revision; do not abort this completed search.
+      activeSearch.current = null;
       if (result.kind === "found" && result.changedCount > 0) {
-        dispatch(applyRoundingAdjustment({ expected, path: result.path }));
+        dispatch(
+          applyRoundingAdjustment({
+            expected,
+            expectedRevision,
+            path: result.path,
+          }),
+        );
       }
-      return result;
+      return { result, revision: appStore.getState().editor.revision };
     } finally {
       if (activeSearch.current === controller) activeSearch.current = null;
     }
@@ -130,9 +172,17 @@ export function EditorPage() {
 
       <div className="editor-controls">
         <AdjustmentControls
+          key={resetId}
+          character={character}
+          revision={revision}
           unfilledCount={unfilledCount}
           onApply={applySelectedAdjustment}
           onRound={applyRounding}
+        />
+        <CharacterTypeSelector
+          value={characterType}
+          hasInput={currentLevel > 0}
+          onSwitch={(value) => dispatch(switchCharacterType(value))}
         />
         <fieldset className="editor-weight">
           <legend>体格</legend>
@@ -155,7 +205,7 @@ export function EditorPage() {
         編集中: {rangeLabel(activeRange)}
       </h2>
       <PathEditor
-        key={activeRange}
+        key={`${resetId}:${activeRange}`}
         characterType={characterType}
         path={path}
         visibleRanges={[activeRange]}

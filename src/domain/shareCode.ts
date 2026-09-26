@@ -1,9 +1,14 @@
 import { validateCharacterInfo, type CharacterInfo } from "./character";
-import { getLevelRangeById, type LevelRangeId } from "./levelRanges";
+import {
+  getAvailableVocations,
+  getLevelRangeById,
+  type LevelRangeId,
+} from "./levelRanges";
+import { isCharacterType, type CharacterType } from "./characterType";
 import { isWeightClass } from "./status";
 import { VOCATION_IDS, type VocationId } from "./vocations";
 
-const VERSION = "1";
+const VERSION = "2";
 
 const vocationCodes: Readonly<Record<VocationId, string>> = {
   [VOCATION_IDS.fighter]: "z",
@@ -44,8 +49,13 @@ function encodePath(path: readonly VocationId[]): string {
   return result;
 }
 
-function decodePath(code: string, rangeId: LevelRangeId): VocationId[] {
-  const { from, to, availableVocationIds } = getLevelRangeById(rangeId);
+function decodePath(
+  code: string,
+  rangeId: LevelRangeId,
+  characterType: CharacterType,
+): VocationId[] {
+  const { from, to } = getLevelRangeById(rangeId);
+  const availableVocationIds = getAvailableVocations(rangeId, characterType);
   const limit = to - from + 1;
   const result: VocationId[] = [];
   let index = 0;
@@ -67,6 +77,14 @@ function decodePath(code: string, rangeId: LevelRangeId): VocationId[] {
       throw new RestoreCodeError(`${rangeId} の件数が正しくありません。`);
     }
     if (!availableVocationIds.includes(vocation)) {
+      if (
+        characterType === "pawn" &&
+        getLevelRangeById(rangeId).availableVocationIds.includes(vocation)
+      ) {
+        throw new RestoreCodeError(
+          `${rangeId} にポーンでは選択できない職業があります。`,
+        );
+      }
       throw new RestoreCodeError(`${rangeId} に選択できない職業があります。`);
     }
     if (result.length + count > limit) {
@@ -79,13 +97,10 @@ function decodePath(code: string, rangeId: LevelRangeId): VocationId[] {
 
 export function serializeCharacter(character: CharacterInfo): string {
   const validated = validateCharacterInfo(character);
-  // Pawn sharing is introduced with the versioned format in Phase 6 PR 03.
-  if (validated.characterType !== "arisen") {
-    throw new RangeError("現在の共有コード形式はポーンに対応していません。");
-  }
-  const { vocationPath, weightClass } = validated;
+  const { vocationPath, weightClass, characterType } = validated;
   return [
     VERSION,
+    characterType,
     weightClass,
     encodePath(vocationPath.onlyLv1),
     encodePath(vocationPath.forLv10),
@@ -98,23 +113,31 @@ export function parseCharacterCode(code: string): CharacterInfo {
   if (code.length > 1024)
     throw new RestoreCodeError("復元コードが長すぎます。");
   const segments = code.split("-");
-  if (segments.length !== 6)
+  if (segments.length !== 6 && segments.length !== 7)
     throw new RestoreCodeError("復元コードの区切り数が正しくありません。");
-  const [version, weightClass, onlyLv1, forLv10, forLv100, forLv200] = segments;
-  if (version !== VERSION)
+  const version = segments[0];
+  if (version !== "1" && version !== VERSION)
     throw new RestoreCodeError(`未対応のバージョンです: ${version || "なし"}`);
+  if (segments.length !== (version === "1" ? 6 : 7))
+    throw new RestoreCodeError("復元コードの区切り数が正しくありません。");
+  const characterType = version === "1" ? "arisen" : segments[1];
+  if (!isCharacterType(characterType))
+    throw new RestoreCodeError("キャラクター種別コードが正しくありません。");
+  const [weightClass, onlyLv1, forLv10, forLv100, forLv200] = segments.slice(
+    version === "1" ? 1 : 2,
+  );
   if (!isWeightClass(weightClass))
     throw new RestoreCodeError("体格コードが正しくありません。");
 
   try {
     return validateCharacterInfo({
-      characterType: "arisen",
+      characterType,
       weightClass,
       vocationPath: {
-        onlyLv1: decodePath(onlyLv1, "onlyLv1"),
-        forLv10: decodePath(forLv10, "forLv10"),
-        forLv100: decodePath(forLv100, "forLv100"),
-        forLv200: decodePath(forLv200, "forLv200"),
+        onlyLv1: decodePath(onlyLv1, "onlyLv1", characterType),
+        forLv10: decodePath(forLv10, "forLv10", characterType),
+        forLv100: decodePath(forLv100, "forLv100", characterType),
+        forLv200: decodePath(forLv200, "forLv200", characterType),
       },
     });
   } catch (error) {

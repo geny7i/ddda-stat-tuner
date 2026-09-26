@@ -60,7 +60,7 @@ test("自動調整からチャート・共有・復元まで同じ育成経路�
   );
   await page.getByRole("button", { name: "共有 URL をコピー" }).click();
   const shareUrl = await page.evaluate(() => navigator.clipboard.readText());
-  expect(shareUrl).toContain("/#/restore?c=1-ll-z-x9-u5a-u64");
+  expect(shareUrl).toContain("/#/restore?c=2-arisen-ll-z-x9-u5a-u64");
 
   await page.goto(shareUrl);
   await expect(page.getByText("Lv 200")).toBeVisible();

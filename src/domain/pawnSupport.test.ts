@@ -14,7 +14,7 @@ import {
 } from "./levelRanges";
 import { addToPath, replaceInPath } from "./pathEditing";
 import { adjustPath } from "./pathAdjustment";
-import { serializeCharacter } from "./shareCode";
+import { serializeCharacter, parseCharacterCode } from "./shareCode";
 import { STAT_IDS, type StatId } from "./status";
 import { VOCATIONS, type VocationId } from "./vocations";
 
@@ -160,8 +160,6 @@ test("禁止職業を含む入力をポーンの編集・自動入力へ渡す�
   ).toThrow("選択できない職業");
 });
 
-test("ポーンを種別の保存に未対応の旧形式で共有しない", () => {
-  expect(() => serializeCharacter(pawn)).toThrow(
-    "共有コード形式はポーンに対応していません",
-  );
+test("ポーンを種別付きで共有し復元できる", () => {
+  expect(parseCharacterCode(serializeCharacter(pawn))).toEqual(pawn);
 });
