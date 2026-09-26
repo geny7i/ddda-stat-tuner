@@ -1,3 +1,4 @@
+import { Link, MemoryRouter, Route, Routes } from "react-router";
 import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Provider } from "react-redux";
@@ -18,6 +19,69 @@ import {
 import { runRoundingSearch } from "./runRoundingSearch";
 
 vi.mock("./runRoundingSearch", () => ({ runRoundingSearch: vi.fn() }));
+
+test("使い方への移動で探索を中断し、往復後も遅い旧結果を適用しない", async () => {
+  const user = userEvent.setup();
+  const store = createAppStore();
+  const input: CharacterInfo = {
+    characterType: "arisen",
+    weightClass: "m",
+    vocationPath: {
+      onlyLv1: ["fighter"],
+      forLv10: Array(9).fill("fighter"),
+      forLv100: Array(90).fill("fighter"),
+      forLv200: Array(100).fill("fighter"),
+    },
+  };
+  store.dispatch(restoreCharacter(input));
+  const result = searchRoundingAdjustment(input, 5);
+  if (result.kind !== "found") throw new Error("Expected rounding result");
+  const resolvers: Array<(result: RoundingSearchResult) => void> = [];
+  vi.mocked(runRoundingSearch)
+    .mockReset()
+    .mockImplementation(
+      () => new Promise((resolve) => resolvers.push(resolve)),
+    );
+  render(
+    <Provider store={store}>
+      <MemoryRouter>
+        <Routes>
+          <Route path="/" element={<EditorPage />} />
+          <Route
+            path="/help"
+            element={
+              <>
+                <h1>使い方</h1>
+                <Link to="/">育成計画へ戻る</Link>
+              </>
+            }
+          />
+        </Routes>
+      </MemoryRouter>
+    </Provider>,
+  );
+  await user.selectOptions(screen.getByRole("combobox"), "round-5");
+  await user.click(screen.getByRole("button", { name: "自動調整を実行" }));
+  const signal = vi.mocked(runRoundingSearch).mock.calls[0][2];
+  await user.click(screen.getByRole("link", { name: "使い方" }));
+  expect(signal.aborted).toBe(true);
+  await user.click(screen.getByRole("link", { name: "育成計画へ戻る" }));
+  await user.selectOptions(screen.getByRole("combobox"), "round-5");
+  await user.click(screen.getByRole("button", { name: "自動調整を実行" }));
+  await act(async () => {
+    resolvers[0](result);
+  });
+  expect(store.getState().editor.path).toEqual(input.vocationPath);
+  expect(screen.queryByRole("table")).not.toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "自動調整を実行" })).toBeDisabled();
+  await act(async () => {
+    resolvers[1](result);
+  });
+  expect(store.getState().editor.path).toEqual(result.path);
+  expect(
+    screen.getByRole("table", { name: "調整前後のステータスとスコア" }),
+  ).toBeVisible();
+});
 
 test.each(["weight", "type", "restore", "path"] as const)(
   "探索中の%s変更後、遅い旧結果が新しい探索を上書きしない",
@@ -45,7 +109,9 @@ test.each(["weight", "type", "restore", "path"] as const)(
       );
     render(
       <Provider store={store}>
-        <EditorPage />
+        <MemoryRouter>
+          <EditorPage />
+        </MemoryRouter>
       </Provider>,
     );
     await user.selectOptions(screen.getByRole("combobox"), "round-5");
@@ -104,7 +170,9 @@ test("レベル帯を切り替えても経路と体格を保ち、ボタンで�
   const store = createAppStore();
   render(
     <Provider store={store}>
-      <EditorPage />
+      <MemoryRouter>
+        <EditorPage />
+      </MemoryRouter>
     </Provider>,
   );
 
@@ -170,7 +238,9 @@ test("探索中に体格を変更した場合は古い結果を適用しない",
   );
   render(
     <Provider store={store}>
-      <EditorPage />
+      <MemoryRouter>
+        <EditorPage />
+      </MemoryRouter>
     </Provider>,
   );
   await user.selectOptions(

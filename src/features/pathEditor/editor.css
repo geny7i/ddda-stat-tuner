@@ -26,8 +26,8 @@
   margin: 0;
 }
 
-.editor-help-button,
-.editor-help-dialog button {
+.editor-help-link,
+.editor-confirm-dialog button {
   border: 1px solid #164f85;
   border-radius: 0.35rem;
   background: #fff;
@@ -35,16 +35,17 @@
   padding: 0.4rem 0.7rem;
   font: inherit;
   cursor: pointer;
+  text-decoration: none;
 }
 
-.editor-help-button:focus-visible,
-.editor-help-dialog button:focus-visible,
-.editor-help-dialog h2:focus-visible {
+.editor-help-link:focus-visible,
+.editor-confirm-dialog button:focus-visible,
+.editor-confirm-dialog h2:focus-visible {
   outline: 3px solid #ff9d00;
   outline-offset: 2px;
 }
 
-.editor-help-dialog {
+.editor-confirm-dialog {
   box-sizing: border-box;
   width: min(36rem, calc(100vw - 2rem));
   max-height: calc(100dvh - 2rem);
@@ -56,19 +57,19 @@
   overflow-y: auto;
 }
 
-.editor-help-dialog::backdrop {
+.editor-confirm-dialog::backdrop {
   background: #18212b99;
 }
 
-.editor-help-content {
+.editor-confirm-content {
   padding: 1.25rem;
 }
 
-.editor-help-content h2 {
+.editor-confirm-content h2 {
   margin: 0;
 }
 
-.editor-help-content p {
+.editor-confirm-content p {
   margin: 1rem 0;
 }
 
@@ -316,54 +317,6 @@
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-}
-
-.comparison-scroll {
-  overflow-x: auto;
-  max-width: 100%;
-}
-
-.comparison-panel table {
-  width: 100%;
-  border-collapse: collapse;
-  white-space: nowrap;
-}
-
-.score-chart {
-  display: grid;
-  gap: 0.45rem;
-  margin: 0 0 1rem;
-  padding: 0;
-  list-style: none;
-}
-
-.score-chart li {
-  display: grid;
-  grid-template-columns: minmax(8rem, 11rem) minmax(8rem, 1fr) 4rem;
-  align-items: center;
-  gap: 0.6rem;
-}
-
-.score-chart meter {
-  width: 100%;
-  height: 1.25rem;
-  accent-color: #164f85;
-}
-
-.score-chart output {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-.comparison-panel th,
-.comparison-panel td {
-  border-bottom: 1px solid #dce3e9;
-  padding: 0.4rem 0.55rem;
-  text-align: right;
-}
-
-.comparison-panel th:first-child {
-  text-align: left;
 }
 
 .comparison-cards {
@@ -730,10 +683,5 @@
 
   .editor-sticky-bar .status-values dt {
     font-size: 0.7rem;
-  }
-
-  .score-chart li {
-    grid-template-columns: minmax(6.5rem, 8rem) minmax(5rem, 1fr) 3rem;
-    gap: 0.35rem;
   }
 }
