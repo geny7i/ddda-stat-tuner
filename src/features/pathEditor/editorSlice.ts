@@ -4,6 +4,7 @@ import {
   adjustPath,
   type CharacterInfo,
   type CharacterType,
+  assertCharacterType,
   validateCharacterInfo,
   validateVocationPath,
   LEVEL_RANGES,
@@ -20,6 +21,8 @@ import {
 } from "../../domain";
 
 export type EditorState = {
+  revision: number;
+  resetId: number;
   characterType: CharacterType;
   path: VocationPath;
   weightClass: WeightClass;
@@ -28,6 +31,8 @@ export type EditorState = {
 };
 
 const initialState: EditorState = {
+  revision: 0,
+  resetId: 0,
   characterType: "arisen",
   path: { onlyLv1: [], forLv10: [], forLv100: [], forLv200: [] },
   weightClass: "m",
@@ -39,11 +44,22 @@ const editorSlice = createSlice({
   name: "editor",
   initialState,
   reducers: {
+    switchCharacterType(state, action: PayloadAction<CharacterType>) {
+      assertCharacterType(action.payload);
+      if (state.characterType === action.payload) return;
+      state.characterType = action.payload;
+      for (const { id } of LEVEL_RANGES) state.path[id] = [];
+      state.activeRange = "onlyLv1";
+      state.revision++;
+      state.resetId++;
+    },
     setActiveRange(state, action: PayloadAction<LevelRangeId>) {
       state.activeRange = action.payload;
     },
     setWeightClass(state, action: PayloadAction<WeightClass>) {
+      if (state.weightClass === action.payload) return;
       state.weightClass = action.payload;
+      state.revision++;
     },
     toggleFocusedStat(state, action: PayloadAction<StatId>) {
       const index = state.focusedStats.indexOf(action.payload);
@@ -54,6 +70,8 @@ const editorSlice = createSlice({
       const { vocationPath, weightClass, characterType } =
         validateCharacterInfo(action.payload);
       state.characterType = characterType;
+      state.revision++;
+      state.resetId++;
       state.weightClass = weightClass;
       for (const { id } of LEVEL_RANGES) state.path[id] = [...vocationPath[id]];
       state.activeRange =
@@ -76,7 +94,10 @@ const editorSlice = createSlice({
         count,
         state.characterType,
       );
-      if (next !== state.path) state.path[range] = [...next[range]];
+      if (next !== state.path) {
+        state.path[range] = [...next[range]];
+        state.revision++;
+      }
     },
     replaceStep(
       state,
@@ -94,7 +115,10 @@ const editorSlice = createSlice({
         target,
         state.characterType,
       );
-      if (next !== state.path) state.path[range] = [...next[range]];
+      if (next !== state.path) {
+        state.path[range] = [...next[range]];
+        state.revision++;
+      }
     },
     removeStep(
       state,
@@ -102,7 +126,10 @@ const editorSlice = createSlice({
     ) {
       const { range, vocation } = action.payload;
       const next = removeFromPath(state.path, range, vocation);
-      if (next !== state.path) state.path[range] = [...next[range]];
+      if (next !== state.path) {
+        state.path[range] = [...next[range]];
+        state.revision++;
+      }
     },
     removeAllSteps(
       state,
@@ -110,7 +137,10 @@ const editorSlice = createSlice({
     ) {
       const { range, vocation } = action.payload;
       const next = removeAllFromPath(state.path, range, vocation);
-      if (next !== state.path) state.path[range] = [...next[range]];
+      if (next !== state.path) {
+        state.path[range] = [...next[range]];
+        state.revision++;
+      }
     },
     applyAdjustment(state, action: PayloadAction<PathAdjustmentRequest>) {
       const result = adjustPath(
@@ -119,12 +149,18 @@ const editorSlice = createSlice({
         state.characterType,
       );
       if (result.changedCount === 0) return;
+      state.revision++;
       for (const { id } of LEVEL_RANGES) state.path[id] = [...result.path[id]];
     },
     applyRoundingAdjustment(
       state,
-      action: PayloadAction<{ expected: CharacterInfo; path: VocationPath }>,
+      action: PayloadAction<{
+        expected: CharacterInfo;
+        expectedRevision: number;
+        path: VocationPath;
+      }>,
     ) {
+      if (state.revision !== action.payload.expectedRevision) return;
       if (state.characterType !== action.payload.expected.characterType) return;
       if (state.weightClass !== action.payload.expected.weightClass) return;
       for (const { id } of LEVEL_RANGES) {
@@ -140,6 +176,7 @@ const editorSlice = createSlice({
         action.payload.path,
         state.characterType,
       );
+      state.revision++;
       for (const { id } of LEVEL_RANGES) {
         state.path[id] = [...path[id]];
       }
@@ -148,6 +185,7 @@ const editorSlice = createSlice({
 });
 
 export const {
+  switchCharacterType,
   setActiveRange,
   setWeightClass,
   toggleFocusedStat,

@@ -9,8 +9,60 @@ import {
   restoreCharacter,
   setActiveRange,
   setWeightClass,
+  switchCharacterType,
+  toggleFocusedStat,
 } from "./editorSlice";
 import { selectCharacterInfo, selectComparisonRows } from "./selectors";
+
+test("種別切り替えは全帯をリセットし体格・注目項目を維持する", () => {
+  const store = createAppStore();
+  store.dispatch(setWeightClass("ll"));
+  store.dispatch(toggleFocusedStat("hp"));
+  store.dispatch(
+    applyAdjustment({
+      strategy: { kind: "maximize-stat", statId: "atk" },
+      scope: { kind: "unfilled" },
+    }),
+  );
+  store.dispatch(setActiveRange("forLv200"));
+  const before = store.getState().editor;
+  store.dispatch(switchCharacterType("arisen"));
+  expect(store.getState().editor).toBe(before);
+  store.dispatch(switchCharacterType("pawn"));
+  const after = store.getState().editor;
+  expect(after.characterType).toBe("pawn");
+  expect(Object.values(after.path).every((steps) => steps.length === 0)).toBe(
+    true,
+  );
+  expect(after.weightClass).toBe("ll");
+  expect(after.focusedStats).toEqual(before.focusedStats);
+  expect(after.activeRange).toBe("onlyLv1");
+  expect(after.revision).toBe(before.revision + 1);
+  expect(after.resetId).toBe(before.resetId + 1);
+  store.dispatch(switchCharacterType("arisen"));
+  expect(
+    Object.values(store.getState().editor.path).every(
+      (steps) => steps.length === 0,
+    ),
+  ).toBe(true);
+});
+
+test("入力を変更して元に戻しても、以前の世代の探索結果を適用しない", () => {
+  const store = createAppStore();
+  const expected = selectCharacterInfo(store.getState());
+  const expectedRevision = store.getState().editor.revision;
+  store.dispatch(setWeightClass("ll"));
+  store.dispatch(setWeightClass("m"));
+  const before = store.getState();
+  store.dispatch(
+    applyRoundingAdjustment({
+      expected,
+      expectedRevision,
+      path: { ...expected.vocationPath, onlyLv1: ["mage"] },
+    }),
+  );
+  expect(store.getState()).toBe(before);
+});
 
 test("種別を編集状態・比較・手動編集・自動入力へ渡す", () => {
   const store = createAppStore();
@@ -82,12 +134,17 @@ test("種別に反する復元・調整結果を拒否し、種別違いの古�
   expect(store.getState()).toBe(before);
   expect(() =>
     store.dispatch(
-      applyRoundingAdjustment({ expected: pawn, path: forbidden }),
+      applyRoundingAdjustment({
+        expectedRevision: store.getState().editor.revision,
+        expected: pawn,
+        path: forbidden,
+      }),
     ),
   ).toThrow("選択できない職業");
   expect(store.getState()).toBe(before);
   store.dispatch(
     applyRoundingAdjustment({
+      expectedRevision: store.getState().editor.revision,
       expected: { ...pawn, characterType: "arisen" },
       path: { ...pawn.vocationPath, forLv100: ["mage"] },
     }),
@@ -169,20 +226,38 @@ test("倍数調整は開始時の経路と体格が一致する場合だけ一�
   const unsubscribe = store.subscribe(() => {
     updates++;
   });
-  store.dispatch(applyRoundingAdjustment({ expected, path }));
+  store.dispatch(
+    applyRoundingAdjustment({
+      expectedRevision: store.getState().editor.revision,
+      expected,
+      path,
+    }),
+  );
   unsubscribe();
   expect(updates).toBe(1);
   expect(store.getState().editor.path.forLv200[0]).toBe("strider");
 
   store.dispatch(restoreCharacter(expected));
   store.dispatch(setWeightClass("ll"));
-  store.dispatch(applyRoundingAdjustment({ expected, path }));
+  store.dispatch(
+    applyRoundingAdjustment({
+      expectedRevision: store.getState().editor.revision,
+      expected,
+      path,
+    }),
+  );
   expect(store.getState().editor.path.forLv200[0]).toBe("fighter");
 
   store.dispatch(setWeightClass("m"));
   store.dispatch(
     replaceStep({ range: "forLv200", source: "fighter", target: "mage" }),
   );
-  store.dispatch(applyRoundingAdjustment({ expected, path }));
+  store.dispatch(
+    applyRoundingAdjustment({
+      expectedRevision: store.getState().editor.revision,
+      expected,
+      path,
+    }),
+  );
   expect(store.getState().editor.path.forLv200[0]).toBe("mage");
 });

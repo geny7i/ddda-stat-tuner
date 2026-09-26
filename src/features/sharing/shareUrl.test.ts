@@ -14,6 +14,6 @@ test("現在の配置先を使って共有 URL を組み立てる", () => {
     },
   };
   expect(buildShareUrl(character, "https://example.test/sub/app/#/chart")).toBe(
-    "https://example.test/sub/app/#/restore?c=1-ll-z-x9--",
+    "https://example.test/sub/app/#/restore?c=2-arisen-ll-z-x9--",
   );
 });

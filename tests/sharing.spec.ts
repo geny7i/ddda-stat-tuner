@@ -25,7 +25,7 @@ test("共有 URL をコピーし、同じ経路と体格を復元できる", asy
   await page.getByRole("button", { name: "共有 URL をコピー" }).click();
   await expect(page.getByText("コピーしました。")).toBeVisible();
   const shareUrl = await page.evaluate(() => navigator.clipboard.readText());
-  expect(shareUrl).toMatch(/\/#\/restore\?c=1-ll-z-x9--$/);
+  expect(shareUrl).toMatch(/\/#\/restore\?c=2-arisen-ll-z-x9--$/);
 
   await page.goto(shareUrl);
   await expect(page.getByRole("heading", { name: "育成計画" })).toBeVisible();
