@@ -1,3 +1,4 @@
+import { MemoryRouter } from "react-router";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Provider } from "react-redux";
@@ -9,7 +10,9 @@ function renderEditor() {
   const store = createAppStore();
   render(
     <Provider store={store}>
-      <EditorPage />
+      <MemoryRouter>
+        <EditorPage />
+      </MemoryRouter>
     </Provider>,
   );
   return store;

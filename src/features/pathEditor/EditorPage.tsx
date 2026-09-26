@@ -28,7 +28,6 @@ import { CharacterTypeSelector } from "./CharacterTypeSelector";
 import { runRoundingSearch } from "./runRoundingSearch";
 import { FocusOptions } from "./FocusOptions";
 import { StatusSummary } from "./StatusSummary";
-import { EditorHelp } from "./EditorHelp";
 import { ShareButton } from "../sharing/ShareButton";
 import { LevelRangeSelector, rangeLabel } from "./LevelRangeSelector";
 import {
@@ -157,7 +156,6 @@ export function EditorPage() {
     <div className="editor-page">
       <div className="editor-title-row">
         <h1>育成計画</h1>
-        <EditorHelp />
       </div>
 
       <div className="editor-sticky-bar">

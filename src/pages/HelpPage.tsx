@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Link, useLocation, useSearchParams } from "react-router";
+import { useLocation, useSearchParams } from "react-router";
 import helpMarkdown from "../content/help.md?raw";
 import { HelpMarkdown } from "../features/help/HelpMarkdown";
 import "../features/help/help.css";
@@ -30,9 +30,6 @@ export function HelpPage() {
   return (
     <div ref={pageRef} className="help-page">
       <h1>使い方</h1>
-      <p>
-        <Link to="/">育成計画へ戻る</Link>
-      </p>
       <HelpMarkdown source={helpMarkdown} />
     </div>
   );

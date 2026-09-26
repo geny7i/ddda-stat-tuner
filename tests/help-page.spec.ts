@@ -5,6 +5,51 @@ const roundingId = "help-ステータスの510の倍数への調整について"
 const sectionUrl = (id: string) =>
   `./#/help?${new URLSearchParams({ section: id })}`;
 
+for (const width of [1280, 390]) {
+  test(`${width}px: ヘッダーから使い方ページを往復でき、重複する導線がない`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 844 });
+    await page.goto("./#/");
+    const menu = page.getByRole("navigation", { name: "メインメニュー" });
+    await expect(menu.getByRole("link")).toHaveText([
+      "育成計画",
+      "使い方",
+      "免責事項",
+    ]);
+    await expect(
+      page.locator(".editor-page").getByRole("link", { name: "使い方" }),
+    ).toHaveCount(0);
+    await menu.getByRole("link", { name: "使い方" }).click();
+    await expect(page).toHaveURL(/#\/help$/);
+    await expect(
+      page.getByRole("heading", { name: "使い方", level: 1 }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "育成計画へ戻る", exact: true }),
+    ).toHaveCount(0);
+    await page
+      .getByRole("navigation", { name: "メインメニュー" })
+      .getByRole("link", { name: "育成計画", exact: true })
+      .click();
+    const help = page
+      .getByRole("navigation", { name: "メインメニュー" })
+      .getByRole("link", { name: "使い方" });
+    await help.focus();
+    await page.keyboard.press("Enter");
+    await expect(page).toHaveURL(/#\/help$/);
+    await expect(
+      page.getByRole("heading", { name: "使い方", level: 1 }),
+    ).toBeVisible();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await page
+      .getByRole("navigation", { name: "目次" })
+      .getByRole("link", { name: "スコアについて", exact: true })
+      .click();
+    await expectSection(page, scoreId);
+  });
+}
+
 async function expectSection(page: Page, id: string) {
   const heading = page.locator(`[id="${id}"]`);
   await expect(heading).toBeFocused();
@@ -19,9 +64,7 @@ async function expectSection(page: Page, id: string) {
   );
 }
 
-test("使い方の本文、目次、サンプル画像と戻るリンクを表示する", async ({
-  page,
-}) => {
+test("使い方の本文、目次、サンプル画像を表示する", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto("./#/help");
@@ -49,8 +92,8 @@ test("使い方の本文、目次、サンプル画像と戻るリンクを表�
   expect(imageUrl).toBe(`${base.pathname}help/images/editor-example.png`);
   expect(errors).toEqual([]);
   await page
-    .getByRole("link", { name: "育成計画へ戻る", exact: true })
-    .first()
+    .getByRole("navigation", { name: "メインメニュー" })
+    .getByRole("link", { name: "育成計画", exact: true })
     .click();
   await expect(
     page.getByRole("heading", { level: 1, name: "育成計画" }),
@@ -117,10 +160,6 @@ test("キーボードで目次から本文へフォーカスを移す", async ({
   await link.focus();
   await page.keyboard.press("Enter");
   await expectSection(page, scoreId);
-  await page.keyboard.press("Tab");
-  await expect(
-    page.getByRole("link", { name: "育成計画へ戻る", exact: true }).nth(1),
-  ).toBeFocused();
 });
 
 test("390px幅・文字拡大でも画像と本文が画面幅に収まる", async ({ page }) => {

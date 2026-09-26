@@ -1,8 +1,14 @@
 import { lazy, Suspense } from "react";
-import { HashRouter, Link, NavLink, Route, Routes } from "react-router";
+import {
+  HashRouter,
+  Link,
+  Navigate,
+  NavLink,
+  Route,
+  Routes,
+} from "react-router";
 import { EditorPage } from "./features/pathEditor/EditorPage";
 import { RestorePage } from "./features/sharing/RestorePage";
-import { ChartPage } from "./pages/ChartPage";
 import { DisclaimerPage } from "./pages/DisclaimerPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 
@@ -12,7 +18,7 @@ const HelpPage = lazy(() =>
 
 const pages = [
   { to: "/", label: "育成計画" },
-  { to: "/chart", label: "チャート" },
+  { to: "/help", label: "使い方" },
   { to: "/disclaimer", label: "免責事項" },
 ] as const;
 
@@ -43,7 +49,7 @@ export function App() {
       <main id="main-content" className="layout" tabIndex={-1}>
         <Routes>
           <Route path="/" element={<EditorPage />} />
-          <Route path="/chart" element={<ChartPage />} />
+          <Route path="/chart" element={<Navigate to="/help" replace />} />
           <Route
             path="/help"
             element={
