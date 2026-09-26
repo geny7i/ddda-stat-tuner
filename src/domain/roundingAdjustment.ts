@@ -5,18 +5,28 @@ import {
   type VocationPath,
 } from "./character";
 import { getStatusGrowth } from "./growth";
-import { LEVEL_RANGES } from "./levelRanges";
+import { assertCharacterType, type CharacterType } from "./characterType";
+import { getAvailableVocations, LEVEL_RANGES } from "./levelRanges";
 import {
   getWeightStatusBonus,
   scoreStatus,
   STAT_IDS,
   type Status,
 } from "./status";
-import { VOCATIONS, type VocationId } from "./vocations";
+import { type VocationId } from "./vocations";
 
 export type RoundingMultiple = 5 | 10;
-export type RoundingSearchResult =
+export type RoundingEligibility =
+  | { readonly kind: "ready" }
   | { readonly kind: "incomplete"; readonly unfilledCount: number }
+  | {
+      readonly kind: "impossible";
+      readonly reason: "pawn-mage-parity";
+      readonly mageCount: number;
+    };
+
+export type RoundingSearchResult =
+  | Exclude<RoundingEligibility, { kind: "ready" }>
   | {
       readonly kind: "found";
       readonly path: VocationPath;
@@ -30,6 +40,52 @@ export type RoundingSearchResult =
     };
 
 type AdjustmentRange = "forLv100" | "forLv200";
+
+function assertMultiple(multiple: RoundingMultiple) {
+  if (multiple !== 5 && multiple !== 10) {
+    throw new RangeError("倍数は 5 または 10 を指定してください。");
+  }
+}
+
+export function getRoundingChangeLimits(
+  characterType: CharacterType,
+  multiple: RoundingMultiple,
+): Readonly<Record<AdjustmentRange, number>> {
+  assertCharacterType(characterType);
+  assertMultiple(multiple);
+  if (characterType === "arisen") return { forLv100: 14, forLv200: 12 };
+  return multiple === 5
+    ? { forLv100: 6, forLv200: 6 }
+    : { forLv100: 9, forLv200: 14 };
+}
+
+/** Shared preflight for the solver and the future pawn UI. */
+export function getRoundingEligibility(
+  character: CharacterInfo,
+  multiple: RoundingMultiple,
+): RoundingEligibility {
+  assertMultiple(multiple);
+  const validated = validateCharacterInfo(character);
+  const unfilledCount = LEVEL_RANGES.reduce(
+    (total, range) =>
+      total +
+      range.to -
+      range.from +
+      1 -
+      validated.vocationPath[range.id].length,
+    0,
+  );
+  if (unfilledCount > 0) return { kind: "incomplete", unfilledCount };
+  if (validated.characterType === "pawn" && multiple === 10) {
+    const mageCount = validated.vocationPath.forLv10.filter(
+      (id) => id === "mage",
+    ).length;
+    if (mageCount % 2 === 0)
+      return { kind: "impossible", reason: "pawn-mage-parity", mageCount };
+  }
+  return { kind: "ready" };
+}
+
 type Move = {
   target: VocationId;
   changed: number;
@@ -81,7 +137,7 @@ function statusMaxima(character: CharacterInfo): Status {
             total +
             (range.to - range.from + 1) *
               Math.max(
-                ...range.availableVocationIds.map(
+                ...getAvailableVocations(range.id, character.characterType).map(
                   (vocation) => getStatusGrowth(vocation, range.id).status[id],
                 ),
               ),
@@ -95,7 +151,7 @@ function statusMaxima(character: CharacterInfo): Status {
  * Exact DP for an additive loss objective at a given change penalty. Each layer
  * consumes one original level, so no source vocation can be overdrawn.
  * Increasing the penalty limits edits; the final pass minimizes edit count
- * lexicographically and therefore guarantees the proven 14 / 12 bounds.
+ * lexicographically and therefore guarantees the proven per-type bounds.
  * This is not a global optimum for final-stat loss across both stages.
  */
 function adjustRange(
@@ -105,44 +161,47 @@ function adjustRange(
   maxima: Status,
   range: AdjustmentRange,
   multiple: RoundingMultiple,
+  characterType: CharacterType,
+  maxChanges: number,
 ): { steps: readonly VocationId[]; expanded: number } {
   const space = residueSpace(range, multiple);
   const initial = space.encode(space.signature(status));
   if (initial === 0) return { steps, expanded: 0 };
-  const maxChanges = range === "forLv100" ? 14 : 12;
   const movesBySource = new Map<VocationId, Move[]>();
   for (const source of new Set(steps)) {
     const original = getStatusGrowth(source, range).status;
     movesBySource.set(
       source,
-      VOCATIONS.filter(
-        (target) =>
-          range !== "forLv100" || target !== "mage" || target === source,
-      ).map((target) => {
-        const growth = getStatusGrowth(target, range).status;
-        const delta = Object.fromEntries(
-          STAT_IDS.map((id) => [id, growth[id] - original[id]]),
-        ) as Status;
-        // Relative loss weighted by squared proximity to the individual maximum:
-        // (-delta / before) * (before / max)^2 = -delta * before / max^2.
-        const loss =
-          STAT_IDS.reduce(
-            (sum, id) =>
-              sum + (Math.max(0, -delta[id]) * before[id]) / maxima[id] ** 2,
-            0,
-          ) +
-          (0.25 * Math.max(0, -scoreStatus(delta))) / scoreStatus(before);
-        const signature = space.signature(delta);
-        return {
-          target,
-          changed: Number(target !== source),
-          loss,
-          scoreDelta: scoreStatus(delta),
-          next: Uint16Array.from(space.coordinates, (values) =>
-            space.encode(values.map((value, i) => value + signature[i])),
-          ),
-        };
-      }),
+      getAvailableVocations(range, characterType)
+        .filter(
+          (target) =>
+            range !== "forLv100" || target !== "mage" || target === source,
+        )
+        .map((target) => {
+          const growth = getStatusGrowth(target, range).status;
+          const delta = Object.fromEntries(
+            STAT_IDS.map((id) => [id, growth[id] - original[id]]),
+          ) as Status;
+          // Relative loss weighted by squared proximity to the individual maximum:
+          // (-delta / before) * (before / max)^2 = -delta * before / max^2.
+          const loss =
+            STAT_IDS.reduce(
+              (sum, id) =>
+                sum + (Math.max(0, -delta[id]) * before[id]) / maxima[id] ** 2,
+              0,
+            ) +
+            (0.25 * Math.max(0, -scoreStatus(delta))) / scoreStatus(before);
+          const signature = space.signature(delta);
+          return {
+            target,
+            changed: Number(target !== source),
+            loss,
+            scoreDelta: scoreStatus(delta),
+            next: Uint16Array.from(space.coordinates, (values) =>
+              space.encode(values.map((value, i) => value + signature[i])),
+            ),
+          };
+        }),
     );
   }
 
@@ -216,24 +275,10 @@ export function searchRoundingAdjustment(
   character: CharacterInfo,
   multiple: RoundingMultiple,
 ): RoundingSearchResult {
-  if (multiple !== 5 && multiple !== 10) {
-    throw new RangeError("倍数は 5 または 10 を指定してください。");
-  }
+  const eligibility = getRoundingEligibility(character, multiple);
+  if (eligibility.kind !== "ready") return eligibility;
   const validated = validateCharacterInfo(character);
-  // Until Phase 6 PR 02, never run the nine-vocation solver for a pawn.
-  if (validated.characterType !== "arisen") {
-    throw new RangeError("ポーンの倍数調整はまだ対応していません。");
-  }
-  const unfilledCount = LEVEL_RANGES.reduce(
-    (total, range) =>
-      total +
-      range.to -
-      range.from +
-      1 -
-      validated.vocationPath[range.id].length,
-    0,
-  );
-  if (unfilledCount > 0) return { kind: "incomplete", unfilledCount };
+  const limits = getRoundingChangeLimits(validated.characterType, multiple);
   const beforeStatus = calculateStatus(validated);
   let path = validated.vocationPath;
   let afterStatus = beforeStatus;
@@ -248,6 +293,8 @@ export function searchRoundingAdjustment(
         maxima,
         range,
         multiple,
+        validated.characterType,
+        limits[range],
       );
       path = { ...path, [range]: adjusted.steps };
       expandedCount += adjusted.expanded;
@@ -257,15 +304,16 @@ export function searchRoundingAdjustment(
   if (!STAT_IDS.every((id) => afterStatus[id] % multiple === 0)) {
     throw new Error("探索結果のステータスが倍数条件と一致しません。");
   }
-  const changedCount = LEVEL_RANGES.reduce(
-    (total, range) =>
-      total +
-      path[range.id].filter(
-        (vocation, index) =>
-          vocation !== validated.vocationPath[range.id][index],
-      ).length,
-    0,
-  );
+  let changedCount = 0;
+  for (const { id } of LEVEL_RANGES) {
+    const changed = path[id].filter(
+      (vocation, index) => vocation !== validated.vocationPath[id][index],
+    ).length;
+    const limit = id === "forLv100" || id === "forLv200" ? limits[id] : 0;
+    if (changed > limit)
+      throw new Error("探索結果の変更数が上限を超えています。");
+    changedCount += changed;
+  }
   return {
     kind: "found",
     path,

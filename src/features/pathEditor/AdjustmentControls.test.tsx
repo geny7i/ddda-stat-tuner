@@ -3,6 +3,32 @@ import userEvent from "@testing-library/user-event";
 import { expect, test, vi } from "vitest";
 import { AdjustmentControls } from "./AdjustmentControls";
 
+test("成立しない倍数調整は再試行エラーや成功として扱わず、理由を示す", async () => {
+  const user = userEvent.setup();
+  const onRound = vi.fn().mockResolvedValue({
+    kind: "impossible",
+    reason: "pawn-mage-parity",
+    mageCount: 2,
+  });
+  render(
+    <AdjustmentControls
+      unfilledCount={0}
+      onApply={vi.fn()}
+      onRound={onRound}
+    />,
+  );
+  await user.selectOptions(screen.getByRole("combobox"), "round-10");
+  await user.click(screen.getByRole("button", { name: "自動調整を実行" }));
+  expect(screen.getByRole("status")).toHaveTextContent(
+    "現在は2回のため実行できません",
+  );
+  expect(screen.getByRole("status")).toHaveTextContent(
+    "5の倍数への調整は利用できます",
+  );
+  expect(screen.queryByRole("table")).not.toBeInTheDocument();
+  expect(screen.getByRole("status")).not.toHaveTextContent("もう一度");
+});
+
 test("6種類の説明を実行前に示し、追加件数を通知する", async () => {
   const onApply = vi.fn().mockReturnValue(7);
   const user = userEvent.setup();
