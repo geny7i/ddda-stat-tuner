@@ -1,0 +1,139 @@
+.help-page {
+  padding-bottom: 2rem;
+}
+
+.help-page a {
+  color: #164f85;
+}
+
+.help-content {
+  display: grid;
+  grid-template-columns: minmax(12rem, 17rem) minmax(0, 1fr);
+  align-items: start;
+  gap: 2rem;
+}
+
+.help-content:not(:has(.help-toc)) {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.help-toc {
+  display: block;
+  position: sticky;
+  top: 1rem;
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+  border: 1px solid #dce3e9;
+  border-radius: 0.5rem;
+  background: #fff;
+  padding: 1rem;
+  overflow-wrap: anywhere;
+}
+
+.help-toc-title {
+  margin: 0 0 0.75rem;
+  font-weight: 700;
+}
+
+.help-toc ul {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.help-toc li + li,
+.help-toc li ul {
+  margin-top: 0.5rem;
+}
+
+.help-toc a {
+  display: inline-block;
+  padding: 0.25rem 0;
+  text-decoration: underline;
+}
+
+.help-body {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  line-height: 1.8;
+}
+
+.help-body :is(h1, h2, h3, h4, h5, h6) {
+  scroll-margin-top: 1.5rem;
+  line-height: 1.5;
+  margin-top: 2rem;
+}
+
+.help-body > :first-child {
+  margin-top: 0;
+}
+
+.help-body :is(h1, h2, h3, h4, h5, h6):focus {
+  outline: 3px solid #ff9d00;
+  outline-offset: 4px;
+}
+
+.help-body img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border: 1px solid #dce3e9;
+  border-radius: 0.35rem;
+  box-sizing: border-box;
+}
+
+.help-body code {
+  background: #e6edf4;
+  border-radius: 0.2rem;
+  padding: 0.1rem 0.25rem;
+}
+
+.help-body pre {
+  max-width: 100%;
+  overflow-x: auto;
+  background: #e6edf4;
+  border-radius: 0.35rem;
+  padding: 1rem;
+  line-height: 1.6;
+}
+
+.help-body pre code {
+  padding: 0;
+}
+
+.help-body blockquote {
+  margin: 1rem 0;
+  border-left: 3px solid #a9b8c5;
+  padding-left: 1rem;
+}
+
+.help-table-scroll {
+  overflow-x: auto;
+}
+
+.help-body table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.help-body th,
+.help-body td {
+  border: 1px solid #dce3e9;
+  padding: 0.5rem;
+  text-align: left;
+}
+
+.help-body th {
+  background: #e6f0fa;
+}
+
+@media (max-width: 800px) {
+  .help-content {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+  }
+
+  .help-toc {
+    position: static;
+    max-height: none;
+  }
+}
