@@ -21,6 +21,7 @@ import {
   isVocationAvailable,
   LEVEL_RANGES,
   type LevelRangeId,
+  type CharacterType,
   type VocationId,
   type VocationPath,
   type StatusGrowthWithScore,
@@ -123,6 +124,7 @@ function CountHandle({
 }
 
 function PaletteCard({
+  characterType,
   vocationId,
   onSelect,
   selectedAddition,
@@ -130,6 +132,7 @@ function PaletteCard({
   draggedStack,
   onReplace,
 }: {
+  characterType: CharacterType;
   vocationId: VocationId;
   onSelect: (selection: Selection) => void;
   selectedAddition: Selection | null;
@@ -154,7 +157,7 @@ function PaletteCard({
   return (
     <div
       ref={targetRef}
-      className={`path-card ${isDropTarget ? (draggedStack && draggedStack.vocationId !== vocationId && isVocationAvailable(draggedStack.rangeId, vocationId) ? "path-target" : "path-rejected") : ""}`}
+      className={`path-card ${isDropTarget ? (draggedStack && draggedStack.vocationId !== vocationId && isVocationAvailable(draggedStack.rangeId, vocationId, characterType) ? "path-target" : "path-rejected") : ""}`}
       data-testid={`palette-${vocationId}`}
     >
       <div ref={ref}>
@@ -197,7 +200,11 @@ function PaletteCard({
             type="button"
             disabled={
               selectedSource.vocationId === vocationId ||
-              !isVocationAvailable(selectedSource.rangeId, vocationId)
+              !isVocationAvailable(
+                selectedSource.rangeId,
+                vocationId,
+                characterType,
+              )
             }
             onClick={onReplace}
           >
@@ -297,6 +304,7 @@ function StackCard({
 }
 
 function RangeArea({
+  characterType,
   range,
   path,
   selectedAddition,
@@ -309,6 +317,7 @@ function RangeArea({
   onRemove,
   onRemoveAll,
 }: {
+  characterType: CharacterType;
   range: LevelRangeId;
   path: VocationPath;
   selectedAddition: Selection | null;
@@ -336,12 +345,12 @@ function RangeArea({
   const canAdd =
     !full &&
     selectedAddition !== null &&
-    isVocationAvailable(range, selectedAddition.vocationId);
+    isVocationAvailable(range, selectedAddition.vocationId, characterType);
 
   return (
     <section
       ref={targetRef}
-      className={`path-range ${isDropTarget ? (!full && draggedSelection && isVocationAvailable(range, draggedSelection.vocationId) ? "path-target" : "path-rejected") : ""} ${full ? "path-full" : ""}`}
+      className={`path-range ${isDropTarget ? (!full && draggedSelection && isVocationAvailable(range, draggedSelection.vocationId, characterType) ? "path-target" : "path-rejected") : ""} ${full ? "path-full" : ""}`}
       data-testid={`range-${range}`}
       aria-label={`レベル帯 ${range}`}
     >
@@ -383,6 +392,7 @@ function RangeArea({
 }
 
 type PathEditorProps = {
+  characterType: CharacterType;
   path: VocationPath;
   visibleRanges: readonly LevelRangeId[];
   comparisonRows: readonly StatusGrowthWithScore[];
@@ -398,6 +408,7 @@ type PathEditorProps = {
 };
 
 export function PathEditor({
+  characterType,
   path,
   visibleRanges,
   comparisonRows,
@@ -448,7 +459,7 @@ export function PathEditor({
   function replaceSelected(range: LevelRangeId, target: VocationId) {
     if (!selectedSource || selectedSource.rangeId !== range) return;
     if (selectedSource.vocationId === target) return;
-    if (!isVocationAvailable(range, target)) return;
+    if (!isVocationAvailable(range, target, characterType)) return;
     onReplace(range, selectedSource.vocationId, target);
   }
 
@@ -526,7 +537,11 @@ export function PathEditor({
             source?.kind === "stack" &&
             target?.kind === "vocation" &&
             source.vocationId !== target.vocationId &&
-            isVocationAvailable(source.rangeId, target.vocationId)
+            isVocationAvailable(
+              source.rangeId,
+              target.vocationId,
+              characterType,
+            )
           ) {
             onReplace(source.rangeId, source.vocationId, target.vocationId);
             setSelection((current) =>
@@ -547,6 +562,7 @@ export function PathEditor({
               focusOptions={focusOptions}
               renderVocation={(vocationId) => (
                 <PaletteCard
+                  characterType={characterType}
                   vocationId={vocationId}
                   onSelect={toggleAddition}
                   selectedAddition={selectedAddition}
@@ -565,6 +581,7 @@ export function PathEditor({
             {LEVEL_RANGES.filter(({ id }) => visibleRanges.includes(id)).map(
               ({ id }) => (
                 <RangeArea
+                  characterType={characterType}
                   key={id}
                   range={id}
                   path={path}

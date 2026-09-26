@@ -79,6 +79,10 @@ function decodePath(code: string, rangeId: LevelRangeId): VocationId[] {
 
 export function serializeCharacter(character: CharacterInfo): string {
   const validated = validateCharacterInfo(character);
+  // Pawn sharing is introduced with the versioned format in Phase 6 PR 03.
+  if (validated.characterType !== "arisen") {
+    throw new RangeError("現在の共有コード形式はポーンに対応していません。");
+  }
   const { vocationPath, weightClass } = validated;
   return [
     VERSION,
@@ -104,6 +108,7 @@ export function parseCharacterCode(code: string): CharacterInfo {
 
   try {
     return validateCharacterInfo({
+      characterType: "arisen",
       weightClass,
       vocationPath: {
         onlyLv1: decodePath(onlyLv1, "onlyLv1"),

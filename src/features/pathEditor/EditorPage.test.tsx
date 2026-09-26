@@ -66,7 +66,13 @@ test("探索中に体格を変更した場合は古い結果を適用しない",
     forLv100: Array(90).fill("fighter"),
     forLv200: Array(100).fill("fighter"),
   } as const;
-  store.dispatch(restoreCharacter({ vocationPath: path, weightClass: "m" }));
+  store.dispatch(
+    restoreCharacter({
+      characterType: "arisen",
+      vocationPath: path,
+      weightClass: "m",
+    }),
+  );
   let resolveSearch!: (result: RoundingSearchResult) => void;
   vi.mocked(runRoundingSearch).mockReturnValue(
     new Promise((resolve) => {

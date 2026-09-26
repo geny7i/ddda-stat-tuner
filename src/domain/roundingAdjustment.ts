@@ -220,6 +220,10 @@ export function searchRoundingAdjustment(
     throw new RangeError("倍数は 5 または 10 を指定してください。");
   }
   const validated = validateCharacterInfo(character);
+  // Until Phase 6 PR 02, never run the nine-vocation solver for a pawn.
+  if (validated.characterType !== "arisen") {
+    throw new RangeError("ポーンの倍数調整はまだ対応していません。");
+  }
   const unfilledCount = LEVEL_RANGES.reduce(
     (total, range) =>
       total +

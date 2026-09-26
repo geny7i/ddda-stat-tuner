@@ -3,6 +3,9 @@ import {
   addToPath,
   adjustPath,
   type CharacterInfo,
+  type CharacterType,
+  validateCharacterInfo,
+  validateVocationPath,
   LEVEL_RANGES,
   removeAllFromPath,
   removeFromPath,
@@ -17,6 +20,7 @@ import {
 } from "../../domain";
 
 export type EditorState = {
+  characterType: CharacterType;
   path: VocationPath;
   weightClass: WeightClass;
   activeRange: LevelRangeId;
@@ -24,6 +28,7 @@ export type EditorState = {
 };
 
 const initialState: EditorState = {
+  characterType: "arisen",
   path: { onlyLv1: [], forLv10: [], forLv100: [], forLv200: [] },
   weightClass: "m",
   activeRange: "onlyLv1",
@@ -46,7 +51,9 @@ const editorSlice = createSlice({
       else state.focusedStats.splice(index, 1);
     },
     restoreCharacter(state, action: PayloadAction<CharacterInfo>) {
-      const { vocationPath, weightClass } = action.payload;
+      const { vocationPath, weightClass, characterType } =
+        validateCharacterInfo(action.payload);
+      state.characterType = characterType;
       state.weightClass = weightClass;
       for (const { id } of LEVEL_RANGES) state.path[id] = [...vocationPath[id]];
       state.activeRange =
@@ -62,7 +69,13 @@ const editorSlice = createSlice({
       }>,
     ) {
       const { range, vocation, count } = action.payload;
-      const next = addToPath(state.path, range, vocation, count);
+      const next = addToPath(
+        state.path,
+        range,
+        vocation,
+        count,
+        state.characterType,
+      );
       if (next !== state.path) state.path[range] = [...next[range]];
     },
     replaceStep(
@@ -74,7 +87,13 @@ const editorSlice = createSlice({
       }>,
     ) {
       const { range, source, target } = action.payload;
-      const next = replaceInPath(state.path, range, source, target);
+      const next = replaceInPath(
+        state.path,
+        range,
+        source,
+        target,
+        state.characterType,
+      );
       if (next !== state.path) state.path[range] = [...next[range]];
     },
     removeStep(
@@ -94,7 +113,11 @@ const editorSlice = createSlice({
       if (next !== state.path) state.path[range] = [...next[range]];
     },
     applyAdjustment(state, action: PayloadAction<PathAdjustmentRequest>) {
-      const result = adjustPath(state.path, action.payload);
+      const result = adjustPath(
+        state.path,
+        action.payload,
+        state.characterType,
+      );
       if (result.changedCount === 0) return;
       for (const { id } of LEVEL_RANGES) state.path[id] = [...result.path[id]];
     },
@@ -102,6 +125,7 @@ const editorSlice = createSlice({
       state,
       action: PayloadAction<{ expected: CharacterInfo; path: VocationPath }>,
     ) {
+      if (state.characterType !== action.payload.expected.characterType) return;
       if (state.weightClass !== action.payload.expected.weightClass) return;
       for (const { id } of LEVEL_RANGES) {
         const current = state.path[id];
@@ -112,8 +136,12 @@ const editorSlice = createSlice({
         )
           return;
       }
+      const path = validateVocationPath(
+        action.payload.path,
+        state.characterType,
+      );
       for (const { id } of LEVEL_RANGES) {
-        state.path[id] = [...action.payload.path[id]];
+        state.path[id] = [...path[id]];
       }
     },
   },
