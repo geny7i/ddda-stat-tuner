@@ -91,6 +91,10 @@ export function AdjustmentControls({
         setResultMessage(
           `実行には残り${result.unfilledCount}Lvの選択が必要です。`,
         );
+      } else if (result.kind === "impossible") {
+        setResultMessage(
+          `ポーンの10の倍数調整には、Lv2〜10でメイジとして成長した回数が奇数である必要があります。現在は${result.mageCount}回のため実行できません。5の倍数への調整は利用できます。`,
+        );
       } else {
         setRoundingResult(result);
         setResultMessage(

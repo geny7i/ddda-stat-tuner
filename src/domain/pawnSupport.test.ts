@@ -14,7 +14,6 @@ import {
 } from "./levelRanges";
 import { addToPath, replaceInPath } from "./pathEditing";
 import { adjustPath } from "./pathAdjustment";
-import { searchRoundingAdjustment } from "./roundingAdjustment";
 import { serializeCharacter } from "./shareCode";
 import { STAT_IDS, type StatId } from "./status";
 import { VOCATIONS, type VocationId } from "./vocations";
@@ -161,13 +160,8 @@ test("禁止職業を含む入力をポーンの編集・自動入力へ渡す�
   ).toThrow("選択できない職業");
 });
 
-test("ポーンを旧形式で共有したり、未対応の覚者用倍数探索へ渡したりしない", () => {
+test("ポーンを種別の保存に未対応の旧形式で共有しない", () => {
   expect(() => serializeCharacter(pawn)).toThrow(
     "共有コード形式はポーンに対応していません",
   );
-  for (const multiple of [5, 10] as const) {
-    expect(() => searchRoundingAdjustment(pawn, multiple)).toThrow(
-      "ポーンの倍数調整はまだ対応していません",
-    );
-  }
 });
