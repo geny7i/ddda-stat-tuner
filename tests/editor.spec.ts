@@ -64,7 +64,7 @@ test("育成経路をドラッグとボタンで編集し、切り替え後も�
   ).toBeChecked();
   await page
     .getByTestId("stack-forLv100-assassin")
-    .getByRole("button", { name: "1Lv削除" })
+    .getByRole("button", { name: "-1Lv" })
     .click();
   await expect(page.getByTestId("capacity-forLv100")).toHaveText("9/90");
 });
@@ -304,9 +304,9 @@ test("入替元の移動、削除後の解除、レベル帯切替を反映す�
       name: "forLv100 の fighter 入替対象に指定",
     })
     .click();
-  await fighterStack.getByRole("button", { name: "1Lv削除" }).click();
+  await fighterStack.getByRole("button", { name: "-1Lv" }).click();
   await expect(fighterStack).toHaveClass(/path-selected-stack/);
-  await fighterStack.getByRole("button", { name: "1Lv削除" }).click();
+  await fighterStack.getByRole("button", { name: "-1Lv" }).click();
   await expect(fighterStack).toHaveCount(0);
   await expect(
     page.getByTestId("palette-warrior").getByRole("button", {
@@ -625,3 +625,34 @@ test.describe("狭い画面", () => {
     await expect(page.getByTestId("capacity-forLv200")).toHaveText("1/100");
   });
 });
+
+for (const width of [390, 1280]) {
+  test(`${width}px: 配置済み職業の操作順と1Lv増減・上限を確認する`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 844 });
+    await page.goto("/#/");
+    await page.getByRole("button", { name: "Lv2～10 (0/9)" }).click();
+    await page
+      .getByTestId("palette-fighter")
+      .getByRole("button", {
+        name: "fighter 10Lvをドラッグまたは選択",
+      })
+      .click();
+    await page.getByRole("button", { name: "選択を追加" }).click();
+    const stack = page.getByTestId("stack-forLv10-fighter");
+    await expect(stack.locator(".path-actions button")).toHaveText([
+      "+1Lv",
+      "-1Lv",
+      "入替対象に指定",
+      "1Lv入替",
+    ]);
+    await expect(stack.getByRole("button", { name: "+1Lv" })).toBeDisabled();
+    await stack.getByRole("button", { name: "-1Lv" }).click();
+    await expect(page.getByTestId("count-forLv10-fighter")).toHaveText("8Lv");
+    await stack.getByRole("button", { name: "+1Lv" }).click();
+    await expect(page.getByTestId("count-forLv10-fighter")).toHaveText("9Lv");
+    await expect(page.getByTestId("capacity-forLv10")).toHaveText("9/9");
+    await expect(stack.getByRole("button", { name: "+1Lv" })).toBeDisabled();
+  });
+}

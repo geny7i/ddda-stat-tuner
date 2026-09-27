@@ -28,8 +28,8 @@ test("経路・体格・注目項目の変更をステータスと成長値カ�
   await expect(page.locator(".comparison-card").first()).toContainText(
     "assassin",
   );
-  await expect(page.getByTestId("score-assassin")).toHaveText("6");
-  await expect(page.getByTestId("score-warrior")).toHaveText("5");
+  await expect(page.getByTestId("score-assassin")).toHaveText("6 / 15.9");
+  await expect(page.getByTestId("score-warrior")).toHaveText("5 / 16");
 });
 
 test("注目ステータスを職業一覧内で切り替えて並べ替えと追加へ反映する", async ({

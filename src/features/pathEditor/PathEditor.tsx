@@ -224,6 +224,8 @@ function StackCard({
   draggedStack,
   onSelectSource,
   onReplace,
+  canAdd,
+  onAdd,
   onRemove,
   onRemoveAll,
 }: {
@@ -234,6 +236,8 @@ function StackCard({
   draggedStack: StackSelection | null;
   onSelectSource: (source: StackSelection) => void;
   onReplace: (target: VocationId) => void;
+  canAdd: boolean;
+  onAdd: (vocation: VocationId) => void;
   onRemove: (vocation: VocationId) => void;
   onRemoveAll: (vocation: VocationId) => void;
 }) {
@@ -276,6 +280,16 @@ function StackCard({
         </div>
         <div className="path-actions">
           <button
+            type="button"
+            disabled={!canAdd}
+            onClick={() => onAdd(vocation)}
+          >
+            +1Lv
+          </button>
+          <button type="button" onClick={() => onRemove(vocation)}>
+            -1Lv
+          </button>
+          <button
             ref={pressedRef}
             type="button"
             className="path-handle"
@@ -286,9 +300,6 @@ function StackCard({
             }
           >
             {isSelected ? "選択中" : "入替対象に指定"}
-          </button>
-          <button type="button" onClick={() => onRemove(vocation)}>
-            1Lv削除
           </button>
           <button
             type="button"
@@ -312,6 +323,7 @@ function RangeArea({
   draggedStack,
   selectedSource,
   onAdd,
+  onAddOne,
   onSelectSource,
   onReplace,
   onRemove,
@@ -325,6 +337,7 @@ function RangeArea({
   draggedStack: StackSelection | null;
   selectedSource: StackSelection | null;
   onAdd: (range: LevelRangeId) => void;
+  onAddOne: (range: LevelRangeId, vocation: VocationId) => void;
   onSelectSource: (source: StackSelection) => void;
   onReplace: (range: LevelRangeId, target: VocationId) => void;
   onRemove: (range: LevelRangeId, vocation: VocationId) => void;
@@ -381,6 +394,8 @@ function RangeArea({
             draggedStack={draggedStack}
             onSelectSource={onSelectSource}
             onReplace={(target) => onReplace(range, target)}
+            canAdd={!full}
+            onAdd={(target) => onAddOne(range, target)}
             onRemove={(target) => onRemove(range, target)}
             onRemoveAll={(target) => onRemoveAll(range, target)}
           />
@@ -598,6 +613,7 @@ export function PathEditor({
                       );
                   }}
                   onSelectSource={toggleReplacement}
+                  onAddOne={(range, vocation) => onAdd(range, vocation, 1)}
                   onReplace={replaceSelected}
                   onRemove={(range, vocation) => {
                     if (

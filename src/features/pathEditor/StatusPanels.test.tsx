@@ -43,6 +43,8 @@ test("注目項目を物理攻撃だけにするとスコアと並び順が変�
   const store = renderEditor();
   await user.click(screen.getByRole("button", { name: "Lv11～100 (0/90)" }));
 
+  expect(screen.getByTestId("score-warrior")).toHaveTextContent("16 / 16");
+
   for (const label of ["HP", "ST", "魔法攻撃", "物理防御", "魔法防御"])
     await user.click(screen.getByRole("checkbox", { name: label }));
 
@@ -50,7 +52,15 @@ test("注目項目を物理攻撃だけにするとスコアと並び順が変�
     screen.getByRole("list", { name: "職業と成長値の一覧" }),
   ).getAllByRole("listitem");
   expect(cards[0]).toHaveAttribute("data-testid", "comparison-assassin");
-  expect(screen.getByTestId("score-assassin")).toHaveTextContent("6");
-  expect(screen.getByTestId("score-warrior")).toHaveTextContent("5");
+  expect(screen.getByTestId("score-assassin")).toHaveTextContent(
+    /^6 \/ 15\.9$/,
+  );
+  expect(screen.getByTestId("score-warrior")).toHaveTextContent("5 / 16");
   expect(store.getState().editor.focusedStats).toEqual(["atk"]);
+
+  await user.click(screen.getByRole("checkbox", { name: "物理攻撃" }));
+  expect(screen.getByTestId("score-assassin")).toHaveTextContent(
+    /^0 \/ 15\.9$/,
+  );
+  expect(screen.getByTestId("score-warrior")).toHaveTextContent("0 / 16");
 });
