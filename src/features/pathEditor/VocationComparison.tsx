@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import {
   STAT_IDS,
+  scoreStatus,
   type StatusGrowthWithScore,
   type VocationId,
 } from "../../domain";
@@ -33,7 +34,12 @@ export function VocationComparison({
               {renderVocation(vocationId)}
               <div className="comparison-card-score">
                 <span>score</span>
-                <output data-testid={`score-${vocationId}`}>{score}</output>
+                <output
+                  data-testid={`score-${vocationId}`}
+                  aria-label="注目ステータスのスコア / 全ステータスのスコア"
+                >
+                  {score} / {scoreStatus(status)}
+                </output>
               </div>
             </div>
             <dl className="comparison-card-stats">
