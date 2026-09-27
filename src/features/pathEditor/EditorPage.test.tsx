@@ -184,6 +184,16 @@ test("レベル帯を切り替えても経路と体格を保ち、ボタンで�
   await user.click(screen.getByRole("button", { name: "Lv11～100 (0/90)" }));
   await user.click(screen.getByRole("button", { name: "Lv2～10 (9/9)" }));
   expect(screen.getByTestId("count-forLv10-fighter")).toHaveTextContent("9Lv");
+  const fighterCard = within(screen.getByTestId("stack-forLv10-fighter"));
+  expect(fighterCard.getByRole("button", { name: "+1Lv" })).toBeDisabled();
+  await user.click(fighterCard.getByRole("button", { name: "-1Lv" }));
+  expect(screen.getByTestId("capacity-forLv10")).toHaveTextContent("8/9");
+  expect(fighterCard.getByRole("button", { name: "+1Lv" })).toBeEnabled();
+  await user.click(fighterCard.getByRole("button", { name: "+1Lv" }));
+  expect(store.getState().editor.path.forLv10).toEqual(
+    Array(9).fill("fighter"),
+  );
+  expect(fighterCard.getByRole("button", { name: "+1Lv" })).toBeDisabled();
 
   await user.click(screen.getByRole("radio", { name: "L" }));
   expect(store.getState().editor.weightClass).toBe("l");
@@ -201,7 +211,7 @@ test("レベル帯を切り替えても経路と体格を保ち、ボタンで�
   expect(screen.getByTestId("count-forLv10-mage")).toHaveTextContent("1Lv");
   await user.click(
     within(screen.getByTestId("stack-forLv10-mage")).getByRole("button", {
-      name: "1Lv削除",
+      name: "-1Lv",
     }),
   );
   expect(store.getState().editor.path.forLv10).toHaveLength(8);
